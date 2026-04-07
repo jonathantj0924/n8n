@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>formatear_ventas.py</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #1e1e2e;
+    --surface: #252535;
+    --surface2:#2d2d42;
+    --border:  #3a3a55;
+    --purple:  #cba6f7;
+    --blue:    #89b4fa;
+    --green:   #a6e3a1;
+    --orange:  #fab387;
+    --yellow:  #f9e2af;
+    --teal:    #94e2d5;
+    --comment: #6272a4;
+    --muted:   #6c7086;
+    --text:    #cdd6f4;
+    --accent:  #f38ba8;
+    --dot-r:   #ff5f57;
+    --dot-y:   #ffbd2e;
+    --dot-g:   #28c840;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1rem 4rem;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(137,180,250,.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 95% 95%, rgba(203,166,247,.05) 0%, transparent 55%);
+  }
+  .card {
+    width: 100%; max-width: 880px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,.4);
+    animation: fadeUp .5s ease both;
+  }
+  .titlebar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: .7rem 1.1rem;
+    display: flex; align-items: center; gap: .7rem;
+  }
+  .dots { display: flex; gap: .45rem; }
+  .dot  { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: var(--dot-r); }
+  .dot.y { background: var(--dot-y); }
+  .dot.g { background: var(--dot-g); }
+  .filename { font-size: .75rem; color: var(--muted); margin-left: auto; letter-spacing: .04em; }
+  .copy-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem; padding: .25rem .7rem; border-radius: 6px;
+    cursor: pointer; transition: all .2s;
+  }
+  .copy-btn:hover  { border-color: var(--blue);  color: var(--blue); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); }
+  .code-body { padding: 1.6rem 1.4rem; overflow-x: auto; }
+  pre { font-size: .83rem; line-height: 1.9; white-space: pre; }
+  .ln   { color: var(--muted); user-select: none; display: inline-block; width: 2.2rem; text-align: right; margin-right: 1.2rem; font-size: .73rem; }
+  .kw   { color: var(--purple); font-weight: 600; }
+  .bi   { color: var(--blue); }
+  .fn   { color: var(--blue); }
+  .str  { color: var(--green); }
+  .num  { color: var(--orange); }
+  .cm   { color: var(--comment); font-style: italic; }
+  .op   { color: var(--teal); }
+  .pm   { color: var(--yellow); }
+  .key  { color: var(--accent); }
+  .fs   { color: var(--green); }
+  footer {
+    width: 100%; max-width: 880px;
+    margin-top: 1.4rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.1rem;
+    display: flex; align-items: center; gap: .8rem;
+    animation: fadeUp .5s .1s ease both;
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--blue));
+    display: grid; place-items: center; font-size: .85rem; flex-shrink: 0;
+  }
+  .author strong { display: block; font-size: .8rem; color: var(--text); }
+  .author a { font-size: .73rem; color: var(--blue); text-decoration: none; }
+  .author a:hover { text-decoration: underline; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="titlebar">
+    <div class="dots">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    </div>
+    <span class="filename">formatear_ventas.py</span>
+    <button class="copy-btn" id="copyBtn" onclick="copyCode()">Copiar</button>
+  </div>
+  <div class="code-body">
+<pre><span class="ln"> 1</span><span class="kw">import</span> <span class="bi">pandas</span> <span class="kw">as</span> <span class="bi">pd</span>
+<span class="ln"> 2</span><span class="kw">import</span> <span class="bi">numpy</span> <span class="kw">as</span> <span class="bi">np</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span><span class="cm"># Transfromacion a data frame</span>
+<span class="ln"> 5</span><span class="bi">df</span> <span class="op">=</span> <span class="bi">pd</span>.<span class="fn">DataFrame</span>([<span class="bi">item</span>[<span class="str">"json"</span>] <span class="kw">for</span> <span class="bi">item</span> <span class="kw">in</span> <span class="bi">_items</span>])
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="cm"># Calcular cumplimiento aunque el se lo construira  en SQL Server dentro de las vistas</span>
+<span class="ln"> 8</span><span class="bi">df</span>[<span class="str">"Cumplimiento"</span>] <span class="op">=</span> <span class="bi">np</span>.<span class="fn">where</span>(
+<span class="ln"> 9</span>    <span class="bi">df</span>[<span class="str">"Presupuesto"</span>] <span class="op">==</span> <span class="num">0</span>,
+<span class="ln">10</span>    <span class="num">0</span>,
+<span class="ln">11</span>    <span class="bi">df</span>[<span class="str">"Ventas"</span>] <span class="op">/</span> <span class="bi">df</span>[<span class="str">"Presupuesto"</span>]
+<span class="ln">12</span>)
+<span class="ln">13</span>
+<span class="ln">14</span><span class="cm"># Función para formatear formateamos el texto para ser enviado</span>
+<span class="ln">15</span><span class="kw">def</span> <span class="fn">formatear_tabla</span>(<span class="pm">df</span>):
+<span class="ln">16</span>    <span class="bi">texto</span> <span class="op">=</span> <span class="str">"Categoria        | Presupuesto | Ventas | Cumplimiento\n"</span>
+<span class="ln">17</span>    <span class="bi">texto</span> <span class="op">+=</span> <span class="str">"-"</span> <span class="op">*</span> <span class="num">55</span> <span class="op">+</span> <span class="str">"\n"</span>
+<span class="ln">18</span>
+<span class="ln">19</span>    <span class="kw">for</span> <span class="bi">_</span>, <span class="bi">row</span> <span class="kw">in</span> <span class="pm">df</span>.<span class="fn">iterrows</span>():
+<span class="ln">20</span>        <span class="bi">texto</span> <span class="op">+=</span> <span class="fs">f"{row['Categoria']:<span class="op">&lt;</span>16} | {int(row['Presupuesto']):<span class="op">&gt;</span>11} | {int(row['Ventas']):<span class="op">&gt;</span>6} | {row['Cumplimiento']*100:<span class="op">&gt;</span>6.0f}%\n"</span>
+<span class="ln">21</span>
+<span class="ln">22</span>  <span class="cm">#Devovlemos como codigo</span>
+<span class="ln">23</span>    <span class="kw">return</span> <span class="fs">f"```\n{texto}\n```"</span>
+<span class="ln">24</span>
+<span class="ln">25</span><span class="cm">#  Mensaje final para psarlo a n8n</span>
+<span class="ln">26</span><span class="bi">mensaje_final</span> <span class="op">=</span> <span class="fn">formatear_tabla</span>(<span class="bi">df</span>)
+<span class="ln">27</span>
+<span class="ln">28</span><span class="kw">return</span> [
+<span class="ln">29</span>    {
+<span class="ln">30</span>        <span class="key">"json"</span>: {
+<span class="ln">31</span>            <span class="key">"mensajeaenviar"</span>: <span class="bi">mensaje_final</span>
+<span class="ln">32</span>        }
+<span class="ln">33</span>    }
+<span class="ln">34</span>]</pre>
+  </div>
+</div>
+
+<footer>
+  <div class="avatar">JT</div>
+  <div class="author">
+    <strong>Desarrollado por Jonathan Tumipamba</strong>
+    <a href="mailto:jonatj@outlook.com">jonatj@outlook.com</a>
+  </div>
+</footer>
+
+<script>
+const raw = `import pandas as pd
+import numpy as np
+# Transfromacion a data frame
+df = pd.DataFrame([item["json"] for item in _items])
+# Calcular cumplimiento aunque el se lo construira  en SQL Server dentro de las vistas
+df["Cumplimiento"] = np.where(
+    df["Presupuesto"] == 0,
+    0,
+    df["Ventas"] / df["Presupuesto"]
+)
+# Función para formatear formateamos el texto para ser enviado
+def formatear_tabla(df):
+    texto = "Categoria        | Presupuesto | Ventas | Cumplimiento\\n"
+    texto += "-" * 55 + "\\n"
+    for _, row in df.iterrows():
+        texto += f"{row['Categoria']:<16} | {int(row['Presupuesto']):>11} | {int(row['Ventas']):>6} | {row['Cumplimiento']*100:>6.0f}%\\n"
+  #Devovlemos como codigo
+    return f"\`\`\`\\n{texto}\\n\`\`\`"
+#  Mensaje final para psarlo a n8n
+mensaje_final = formatear_tabla(df)
+return [
+    {
+        "json": {
+            "mensajeaenviar": mensaje_final
+        }
+    }
+]`;
+
+function copyCode() {
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '¡Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

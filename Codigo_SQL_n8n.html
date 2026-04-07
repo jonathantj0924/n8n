@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N8N Telegram – Business Intelligence | Jonathan Tumipamba</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f5f5f5;
+    color: #1e1e1e;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #ffffff;
+    color: #1e1e1e;
+    padding: 28px 40px 22px;
+    border-bottom: 3px solid #0078d4;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .ssms-icon {
+    width: 44px; height: 44px;
+    background: #0078d4;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; color: #fff;
+    flex-shrink: 0;
+  }
+  .header h1 {
+    font-size: 20px; font-weight: 600;
+    color: #1e1e1e;
+    letter-spacing: 0.2px;
+  }
+  .header .subtitle {
+    font-size: 12.5px; color: #666; margin-top: 3px;
+  }
+  .header .author {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #888;
+    border-top: 1px solid #e8e8e8;
+    padding-top: 10px;
+  }
+  .header .author span {
+    color: #0078d4;
+    font-weight: 600;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    background: #f8f8f8;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap;
+  }
+  .toolbar-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    color: #444;
+    padding: 4px 12px;
+    font-size: 11px;
+    border-radius: 3px;
+    cursor: default;
+    white-space: nowrap;
+  }
+  .toolbar-btn.active { background: #0078d4; border-color: #0078d4; color: #fff; }
+  .toolbar-sep { width: 1px; height: 20px; background: #ddd; margin: 0 4px; }
+  .db-label {
+    margin-left: auto;
+    font-size: 11px;
+    color: #0078d4;
+    background: #e8f2fb;
+    border: 1px solid #b3d4f0;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  /* ── Tab bar ── */
+  .tabs {
+    background: #f0f0f0;
+    display: flex;
+    padding: 0 12px;
+    gap: 2px;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto;
+  }
+  .tab {
+    font-size: 11.5px;
+    color: #888;
+    padding: 8px 16px;
+    cursor: default;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab.active { color: #0078d4; border-bottom: 2px solid #0078d4; background: #fff; }
+  .tab-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #0078d4; margin-right: 6px; }
+
+  /* ── Editor layout ── */
+  .editor-wrap {
+    display: flex;
+    min-height: calc(100vh - 160px);
+  }
+
+  /* Object Explorer sidebar */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #fafafa;
+    border-right: 1px solid #e0e0e0;
+    padding: 12px 0;
+    font-size: 12px;
+    color: #444;
+  }
+  .sidebar-title {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #999;
+    padding: 0 14px 8px;
+    font-weight: 600;
+  }
+  .tree-item {
+    padding: 4px 14px 4px 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+    color: #555;
+  }
+  .tree-item:hover { background: #f0f4fa; }
+  .tree-item.active { background: #dceefb; color: #0078d4; font-weight: 500; }
+  .tree-item.folder { padding-left: 14px; font-weight: 600; color: #0078d4; }
+  .tree-item.l2 { padding-left: 30px; }
+  .tree-item.l3 { padding-left: 44px; color: #444; }
+
+  /* Code editor */
+  .code-panel {
+    flex: 1;
+    background: #ffffff;
+    overflow-x: auto;
+    padding: 0;
+    border-left: 1px solid #e8e8e8;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0078d4;
+    background: #f0f6ff;
+    padding: 6px 16px;
+    border-bottom: 1px solid #d0e6f8;
+    border-top: 1px solid #d0e6f8;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .code-block {
+    display: flex;
+    font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 21px;
+  }
+  .line-numbers {
+    min-width: 52px;
+    background: #f8f8f8;
+    color: #bbb;
+    text-align: right;
+    padding: 10px 0 10px 0;
+    user-select: none;
+    border-right: 1px solid #e8e8e8;
+    flex-shrink: 0;
+  }
+  .line-number { display: block; padding-right: 10px; color: #c0c0c0; font-size: 12px; }
+  .code-content {
+    flex: 1;
+    padding: 10px 0 10px 18px;
+    white-space: pre;
+    overflow-x: visible;
+    background: #ffffff;
+  }
+
+  /* ── Syntax colors – tema claro profesional (estilo VS Code Light+) ── */
+  .kw   { color: #0000ff; }              /* keywords: SELECT, FROM… */
+  .kw2  { color: #af00db; }             /* IF, BEGIN, END… */
+  .fn   { color: #795e26; }             /* funciones */
+  .str  { color: #a31515; }             /* strings */
+  .num  { color: #098658; }             /* números */
+  .cmt  { color: #008000; font-style: italic; }  /* comentarios */
+  .obj  { color: #267f99; }             /* tablas / schemas */
+  .col  { color: #001080; }             /* columnas */
+  .op   { color: #1e1e1e; }             /* operadores */
+  .var  { color: #001080; }             /* @variables */
+
+  /* ── Status bar ── */
+  .statusbar {
+    background: #0078d4;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 16px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .statusbar span { opacity: 0.92; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #f5f5f5; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .header { padding: 18px 16px; }
+    .tabs { padding: 0 6px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-top">
+    <div class="ssms-icon">&#x1F5C4;</div>
+    <div>
+      <h1>N8N Telegram &mdash; Mensajería de Business Intelligence</h1>
+      <div class="subtitle">SQL Server Management Studio &nbsp;|&nbsp; T-SQL Query File &nbsp;|&nbsp; Schema: <code style="color:#4fc3f7">basen8n</code></div>
+    </div>
+  </div>
+  <div class="author">Desarrollado por <span>Jonathan Tumipamba</span></div>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+  <span class="toolbar-btn active">&#9654; Ejecutar</span>
+  <span class="toolbar-btn">&#9646;&#9646; Detener</span>
+  <div class="toolbar-sep"></div>
+  <span class="toolbar-btn">Analizar</span>
+  <span class="toolbar-btn">Resultados</span>
+  <span class="toolbar-btn">Mensajes</span>
+  <div class="toolbar-sep"></div>
+  <span class="toolbar-btn">Guardar</span>
+  <span class="db-label">&#128508; basen8n &nbsp;&bull;&nbsp; SQL Server</span>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tabs">
+  <div class="tab active"><span class="tab-dot"></span>basen8n_schema.sql</div>
+  <div class="tab">inventario.sql</div>
+  <div class="tab">ventas_reportes.sql</div>
+  <div class="tab">registro_pedidos.sql</div>
+</div>
+
+<!-- ── EDITOR BODY ── -->
+<div class="editor-wrap">
+
+  <!-- Sidebar – Object Explorer -->
+  <div class="sidebar">
+    <div class="sidebar-title">Explorador de objetos</div>
+    <div class="tree-item folder">&#9660; basen8n</div>
+    <div class="tree-item l2 folder">&#9660; Tablas</div>
+    <div class="tree-item l3 active">&#128462; Inventario</div>
+    <div class="tree-item l3">&#128462; ArribosInventario</div>
+    <div class="tree-item l3">&#128462; Ventas_Presupuesto</div>
+    <div class="tree-item l3">&#128462; Ventas_Transaccional</div>
+    <div class="tree-item l3">&#128462; RegistroInicial</div>
+    <div class="tree-item l3">&#128462; RegistroPedido</div>
+    <div class="tree-item l2 folder">&#9660; Vistas</div>
+    <div class="tree-item l3">&#128196; ReporteDiasn8n</div>
+    <div class="tree-item l3">&#128196; ReporteVentaMensualn8n</div>
+    <div class="tree-item l3">&#128196; ReporteCategorian8n</div>
+  </div>
+
+  <!-- Code panel -->
+  <div class="code-panel">
+
+    <!-- ════════════════════════════════════ -->
+    <!-- 1. CREACIÓN DEL SCHEMA              -->
+    <!-- ════════════════════════════════════ -->
+    <div class="section-label">1 &mdash; Creación del esquema</div>
+    <div class="code-block" id="s1"></div>
+
+    <!-- 2. TABLAS -->
+    <div class="section-label">2 &mdash; Creación de tablas</div>
+    <div class="code-block" id="s2"></div>
+
+    <!-- 3. CONSULTA INVENTARIO -->
+    <div class="section-label">3 &mdash; Consulta de inventario con próximos arribos</div>
+    <div class="code-block" id="s3"></div>
+
+    <!-- 4. FUNCIÓN N8N – BÚSQUEDA DE INVENTARIO -->
+    <div class="section-label">4 &mdash; Función para n8n &mdash; Búsqueda de inventario</div>
+    <div class="code-block" id="s4"></div>
+
+    <!-- 5. REPORTE ÚLTIMOS 4 DÍAS -->
+    <div class="section-label">5 &mdash; Reporte de ventas de los últimos 4 días</div>
+    <div class="code-block" id="s5"></div>
+
+    <!-- 6. VISTAS DE REPORTES -->
+    <div class="section-label">6 &mdash; Vistas de reportes</div>
+    <div class="code-block" id="s6"></div>
+
+    <!-- 7. TABLAS DE REGISTRO -->
+    <div class="section-label">7 &mdash; Tablas de almacenamiento de registro</div>
+    <div class="code-block" id="s7"></div>
+
+    <!-- 8. VALIDACIONES N8N -->
+    <div class="section-label">8 &mdash; Validaciones y lógica para nodos n8n</div>
+    <div class="code-block" id="s8"></div>
+
+  </div><!-- /code-panel -->
+</div><!-- /editor-wrap -->
+
+<!-- ── STATUS BAR ── -->
+<div class="statusbar">
+  <span>&#10003; Listo</span>
+  <span>Filas: 0</span>
+  <span>Col 1</span>
+  <span>Ln 1</span>
+  <span style="margin-left:auto">SQL Server 2019 &nbsp;|&nbsp; basen8n</span>
+</div>
+
+<script>
+// ─── Render helper ────────────────────────────────────────────────────────────
+function render(id, lines) {
+  const el = document.getElementById(id);
+  const nums = document.createElement('div');
+  nums.className = 'line-numbers';
+  const code = document.createElement('div');
+  code.className = 'code-content';
+
+  let lineNum = 1;
+  lines.forEach(l => {
+    const span = document.createElement('span');
+    span.className = 'line-number';
+    span.textContent = lineNum++;
+    nums.appendChild(span);
+  });
+  code.innerHTML = lines.join('\n');
+  el.appendChild(nums);
+  el.appendChild(code);
+}
+
+// ─── Syntax tokens ────────────────────────────────────────────────────────────
+const K = s => `<span class="kw">${s}</span>`;
+const K2 = s => `<span class="kw2">${s}</span>`;
+const F = s => `<span class="fn">${s}</span>`;
+const S = s => `<span class="str">${s}</span>`;
+const N = s => `<span class="num">${s}</span>`;
+const C = s => `<span class="cmt">${s}</span>`;
+const O = s => `<span class="obj">${s}</span>`;
+const L = s => `<span class="col">${s}</span>`;
+const V = s => `<span class="var">${s}</span>`;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 1 – Schema
+// ══════════════════════════════════════════════════════════════════════════════
+render('s1', [
+  C('-- Creación de un esquema para organizar las tablas'),
+  `${K('CREATE')} ${K('SCHEMA')} ${O('basen8n')};`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 2 – Tablas
+// ══════════════════════════════════════════════════════════════════════════════
+render('s2', [
+  `${K('CREATE')} ${K('TABLE')} ${O('basen8n')}.${O('Inventario')} (`,
+  `    ${L('id_articulo')}      ${K('INT')} ${K('PRIMARY KEY')},`,
+  `    ${L('nombre_articulo')}  ${K('VARCHAR')}(${N('100')}),`,
+  `    ${L('descripcion')}      ${K('VARCHAR')}(${N('255')}),`,
+  `    ${L('cantidad')}         ${K('INT')}`,
+  `);`,
+  ``,
+  `${K('CREATE')} ${K('TABLE')} ${O('basen8n')}.${O('ArribosInventario')} (`,
+  `    ${L('id_arribo')}    ${K('INT')} ${K('IDENTITY')}(${N('1')},${N('1')}) ${K('PRIMARY KEY')},`,
+  `    ${L('id_articulo')}  ${K('INT')},`,
+  `    ${L('fecha_llegada')} ${K('DATE')},`,
+  `    ${L('precio')}       ${K('DECIMAL')}(${N('10')},${N('2')}),`,
+  `    ${L('cantidad')}     ${K('INT')},`,
+  `    ${K('FOREIGN KEY')} (${L('id_articulo')}) ${K('REFERENCES')} ${O('basen8n')}.${O('Inventario')}(${L('id_articulo')})`,
+  `);`,
+  ``,
+  C('-- Creación del presupuesto'),
+  `${K('CREATE')} ${K('TABLE')} ${O('basen8n')}.${O('Ventas_Presupuesto')} (`,
+  `    ${L('ID_Transaccion')}  ${K('INT')} ${K('IDENTITY')}(${N('1')},${N('1')}) ${K('PRIMARY KEY')},`,
+  `    ${L('Fecha')}           ${K('DATETIME')},`,
+  `    ${L('ID_Producto')}     ${K('INT')},`,
+  `    ${L('Nombre_Articulo')} ${K('VARCHAR')}(${N('50')}),`,
+  `    ${L('Categoria')}       ${K('VARCHAR')}(${N('50')}),`,
+  `    ${L('Cantidad')}        ${K('INT')},`,
+  `    ${L('Precio_Unitario')} ${K('DECIMAL')}(${N('10')},${N('2')}),`,
+  `    ${L('Ingreso_Total')}   ${K('AS')} (${L('Cantidad')} * ${L('Precio_Unitario')})`,
+  `);`,
+  ``,
+  C('-- Creación de la tabla transaccional'),
+  `${K('CREATE')} ${K('TABLE')} ${O('basen8n')}.${O('Ventas_Transaccional')} (`,
+  `    ${L('ID_Transaccion')}  ${K('INT')} ${K('IDENTITY')}(${N('1')},${N('1')}) ${K('PRIMARY KEY')},`,
+  `    ${L('Fecha')}           ${K('DATETIME')},`,
+  `    ${L('ID_Producto')}     ${K('INT')},`,
+  `    ${L('Nombre_Articulo')} ${K('VARCHAR')}(${N('50')}),`,
+  `    ${L('Categoria')}       ${K('VARCHAR')}(${N('50')}),`,
+  `    ${L('Cantidad')}        ${K('INT')},`,
+  `    ${L('Precio_Unitario')} ${K('DECIMAL')}(${N('10')},${N('2')}),`,
+  `    ${L('Ingreso_Total')}   ${K('AS')} (${L('Cantidad')} * ${L('Precio_Unitario')})`,
+  `);`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 3 – Consulta inventario
+// ══════════════════════════════════════════════════════════════════════════════
+render('s3', [
+  `${K('SELECT')} ${L('i')}.${L('nombre_articulo')}, ${L('i')}.${L('cantidad')}`,
+  `${K('FROM')}   ${O('basen8n')}.${O('Inventario')} ${L('i')}`,
+  `${K('WHERE')}  ${L('i')}.${L('id_articulo')} = ${S("'1'")}`,
+  `${K('UNION ALL')}`,
+  `${K('SELECT')}  ${F('CONCAT')}(`,
+  `              ${S("'Próximos Arribos - '")},`,
+  `              ${K('CAST')}(${L('ai')}.${L('fecha_llegada')} ${K('AS')} ${K('VARCHAR')}(${N('20')}))`,
+  `           ) ${L('nombre_articulo')},`,
+  `           ${L('ai')}.${L('cantidad')}`,
+  `${K('FROM')}   ${O('basen8n')}.${O('Inventario')} ${L('i')}`,
+  `${K('LEFT JOIN')} ${O('basen8n')}.${O('ArribosInventario')} ${L('ai')}`,
+  `           ${K('ON')} ${L('i')}.${L('id_articulo')} = ${L('ai')}.${L('id_articulo')}`,
+  `${K('WHERE')}  ${L('i')}.${L('id_articulo')} = ${S("'1'")};`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 4 – Función n8n búsqueda inventario
+// ══════════════════════════════════════════════════════════════════════════════
+render('s4', [
+  C('------ Búsqueda de inventarios ----------'),
+  C('-- Función para n8n ---'),
+  `${K('DECLARE')} ${V('@id_articulo')} ${K('VARCHAR')}(${N('50')}) = ${S("'2a'")}`,
+  ``,
+  `${K2('IF')} ${K('EXISTS')} (`,
+  `    ${K('SELECT')} *`,
+  `    ${K('FROM')}   ${O('basen8n')}.${O('Inventario')} ${L('i')}`,
+  `    ${K('WHERE')}  ${K('CAST')}(${L('i')}.${L('id_articulo')} ${K('AS')} ${K('VARCHAR')}(${N('20')})) = ${V('@id_articulo')}`,
+  `)`,
+  `${K2('BEGIN')}`,
+  `    ${C('-- Tabla para el proceso de reporte vía Telegram')}`,
+  `    ${K('SELECT')} ${L('i')}.${L('nombre_articulo')}, ${L('i')}.${L('cantidad')}`,
+  `    ${K('FROM')}   ${O('basen8n')}.${O('Inventario')} ${L('i')}`,
+  `    ${K('WHERE')}  ${L('i')}.${L('id_articulo')} = ${V('@id_articulo')}`,
+  `    ${K('UNION ALL')}`,
+  `    ${K('SELECT')}  ${F('CONCAT')}(`,
+  `                  ${S("'Próximos Arribos - '")},`,
+  `                  ${K('CAST')}(${L('ai')}.${L('fecha_llegada')} ${K('AS')} ${K('VARCHAR')}(${N('20')}))`,
+  `               ) ${L('nombre_articulo')},`,
+  `               ${L('ai')}.${L('cantidad')}`,
+  `    ${K('FROM')}   ${O('basen8n')}.${O('Inventario')} ${L('i')}`,
+  `    ${K('LEFT JOIN')} ${O('basen8n')}.${O('ArribosInventario')} ${L('ai')}`,
+  `               ${K('ON')} ${L('i')}.${L('id_articulo')} = ${L('ai')}.${L('id_articulo')}`,
+  `    ${K('WHERE')}  ${L('i')}.${L('id_articulo')} = ${V('@id_articulo')}`,
+  `${K2('END')}`,
+  `${K2('ELSE')}`,
+  `${K2('BEGIN')}`,
+  `    ${K('SELECT')} ${S("'Artículo no encontrado, prueba con códigos del 1 al 10'")} ${K('AS')} ${L('nombre_articulo')};`,
+  `${K2('END')};`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 5 – Reporte últimos 4 días
+// ══════════════════════════════════════════════════════════════════════════════
+render('s5', [
+  C('-- Reporte de ventas de los últimos 4 días del mes'),
+  `${K('SELECT TOP')} ${N('4')}`,
+  `    ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')})             ${L('Fecha')},`,
+  `    ${F('SUM')}(${L('vt')}.${L('Cantidad')} * ${L('vt')}.${L('Precio_Unitario')}) ${L('Ventas')}`,
+  `${K('FROM')}  ${O('basen8n')}.${O('Ventas_Transaccional')} ${L('vt')}`,
+  `${K('WHERE')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')}) <= ${K('CAST')}(${F('GETDATE')}() ${K('AS')} ${K('DATE')})`,
+  `${K('GROUP BY')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')})`,
+  `${K('ORDER BY')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')}) ${K('DESC')};`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 6 – Vistas de reportes
+// ══════════════════════════════════════════════════════════════════════════════
+render('s6', [
+  C('-- Vista: Reporte de los últimos 4 días para n8n'),
+  `${K('CREATE VIEW')} ${O('basen8n')}.${O('ReporteDiasn8n')} ${K('AS')}`,
+  `${K('SELECT TOP')} ${N('4')}`,
+  `    ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')})             ${L('Fecha')},`,
+  `    ${F('SUM')}(${L('vt')}.${L('Cantidad')} * ${L('vt')}.${L('Precio_Unitario')}) ${L('Ventas')}`,
+  `${K('FROM')}  ${O('basen8n')}.${O('Ventas_Transaccional')} ${L('vt')}`,
+  `${K('WHERE')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')}) <= ${K('CAST')}(`,
+  `          ${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATE')}`,
+  `       )`,
+  `${K('GROUP BY')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')})`,
+  `${K('ORDER BY')} ${K('CAST')}(${L('vt')}.${L('Fecha')} ${K('AS')} ${K('DATE')}) ${K('DESC')};`,
+  ``,
+  C('--------------------------------------------------------'),
+  C('-- Vista: Venta vs cuota mensual --'),
+  C('--------------------------------------------------------'),
+  `${K('ALTER VIEW')} ${O('basen8n')}.${O('ReporteVentaMensualn8n')} ${K('AS')}`,
+  `${K('WITH')} ${L('venta')} ${K('AS')} (`,
+  `    ${K('SELECT')} ${F('MONTH')}(${L('vt')}.${L('Fecha')})           ${L('mes')},`,
+  `           ${F('DATENAME')}(${K('MONTH')}, ${L('vt')}.${L('Fecha')}) ${L('NombreMes')},`,
+  `           ${F('SUM')}(${L('vt')}.${L('Cantidad')} * ${L('vt')}.${L('Precio_Unitario')}) ${L('Ventas')}`,
+  `    ${K('FROM')}  ${O('basen8n')}.${O('Ventas_Transaccional')} ${L('vt')}`,
+  `    ${K('WHERE')} ${L('vt')}.${L('Fecha')} <= ${K('CAST')}(`,
+  `               ${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}`,
+  `           )`,
+  `    ${K('GROUP BY')} ${F('MONTH')}(${L('vt')}.${L('Fecha')}), ${F('DATENAME')}(${K('MONTH')}, ${L('vt')}.${L('Fecha')})`,
+  `),`,
+  `${L('presupuesto')} ${K('AS')} (`,
+  `    ${K('SELECT')} ${F('MONTH')}(${L('vp')}.${L('Fecha')})           ${L('mes')},`,
+  `           ${F('DATENAME')}(${K('MONTH')}, ${L('vp')}.${L('Fecha')}) ${L('NombreMes')},`,
+  `           ${F('SUM')}(${L('vp')}.${L('Cantidad')} * ${L('vp')}.${L('Precio_Unitario')}) ${L('Presupuesto')}`,
+  `    ${K('FROM')}  ${O('basen8n')}.${O('Ventas_Presupuesto')} ${L('vp')}`,
+  `    ${K('GROUP BY')} ${F('MONTH')}(${L('vp')}.${L('Fecha')}), ${F('DATENAME')}(${K('MONTH')}, ${L('vp')}.${L('Fecha')})`,
+  `)`,
+  `${K('SELECT')} ${L('p')}.${L('NombreMes')},`,
+  `       ${F('COALESCE')}(${L('p')}.${L('Presupuesto')}, ${N('0')})                              ${L('Presupuesto')},`,
+  `       ${F('COALESCE')}(${L('v')}.${L('Ventas')}, ${N('0')})                                   ${L('Ventas')},`,
+  `       ${F('COALESCE')}(${F('ROUND')}(${L('v')}.${L('Ventas')} * ${N('1.0')} / ${L('p')}.${L('Presupuesto')}, ${N('2')}), ${N('0')}) ${L('Cumplimiento')}`,
+  `${K('FROM')}  ${L('presupuesto')} ${L('p')}`,
+  `${K('LEFT JOIN')} ${L('venta')} ${L('v')} ${K('ON')} ${L('v')}.${L('mes')} = ${L('p')}.${L('mes')};`,
+  ``,
+  C('-- Vista: Ventas vs presupuesto por categoría (mes actual) --'),
+  `${K('CREATE VIEW')} ${O('basen8n')}.${O('ReporteCategorian8n')} ${K('AS')}`,
+  `${K('WITH')} ${L('venta')} ${K('AS')} (`,
+  `    ${K('SELECT')} ${L('vt')}.${L('Categoria')},`,
+  `           ${F('SUM')}(${L('vt')}.${L('Cantidad')} * ${L('vt')}.${L('Precio_Unitario')}) ${L('Ventas')}`,
+  `    ${K('FROM')}  ${O('basen8n')}.${O('Ventas_Transaccional')} ${L('vt')}`,
+  `    ${K('WHERE')} ${F('MONTH')}(${L('vt')}.${L('Fecha')}) = ${F('MONTH')}(${F('GETDATE')}())`,
+  `      ${K('AND')} ${L('vt')}.${L('Fecha')} <= ${K('CAST')}(`,
+  `                  ${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}`,
+  `              )`,
+  `    ${K('GROUP BY')} ${L('vt')}.${L('Categoria')}`,
+  `),`,
+  `${L('presupuesto')} ${K('AS')} (`,
+  `    ${K('SELECT')} ${L('vp')}.${L('Categoria')},`,
+  `           ${F('SUM')}(${L('vp')}.${L('Cantidad')} * ${L('vp')}.${L('Precio_Unitario')}) ${L('Presupuesto')}`,
+  `    ${K('FROM')}  ${O('basen8n')}.${O('Ventas_Presupuesto')} ${L('vp')}`,
+  `    ${K('WHERE')} ${F('MONTH')}(${L('vp')}.${L('Fecha')}) = ${F('MONTH')}(${F('GETDATE')}())`,
+  `    ${K('GROUP BY')} ${L('vp')}.${L('Categoria')}`,
+  `)`,
+  `${K('SELECT')} ${L('p')}.${L('Categoria')},`,
+  `       ${L('p')}.${L('Presupuesto')},`,
+  `       ${F('COALESCE')}(${L('v')}.${L('Ventas')}, ${N('0')})                                   ${L('Ventas')},`,
+  `       ${F('COALESCE')}(${F('ROUND')}(${L('v')}.${L('Ventas')} * ${N('1.0')} / ${L('p')}.${L('Presupuesto')}, ${N('2')}), ${N('0')}) ${L('Cumplimiento')}`,
+  `${K('FROM')}  ${L('presupuesto')} ${L('p')}`,
+  `${K('LEFT JOIN')} ${L('venta')} ${L('v')} ${K('ON')} ${L('v')}.${L('Categoria')} = ${L('p')}.${L('Categoria')};`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 7 – Tablas de registro
+// ══════════════════════════════════════════════════════════════════════════════
+render('s7', [
+  C('-------------------------------------------------------------------------'),
+  C('-- Creación de tablas de almacenamiento de registro --'),
+  C('-------------------------------------------------------------------------'),
+  `${K('CREATE TABLE')} ${O('basen8n')}.${O('RegistroInicial')} (`,
+  `    ${L('ID_clave')}       ${K('INT')} ${K('IDENTITY')}(${N('1')},${N('1')}) ${K('PRIMARY KEY')},`,
+  `    ${L('ID_Usuario')}     ${K('INT')},`,
+  `    ${L('Fecha')}          ${K('DATETIME')},`,
+  `    ${L('Nombre_Usuario')} ${K('VARCHAR')}(${N('50')}),`,
+  `    ${L('Parametro')}      ${K('VARCHAR')}(${N('50')})  ${C('-- Parámetro: inventario o ventas')}`,
+  `);`,
+  ``,
+  `${K('CREATE TABLE')} ${O('basen8n')}.${O('RegistroPedido')} (`,
+  `    ${L('ID_clave')}   ${K('INT')} ${K('IDENTITY')}(${N('1')},${N('1')}) ${K('PRIMARY KEY')},`,
+  `    ${L('ID_Usuario')} ${K('INT')},`,
+  `    ${L('Fecha')}      ${K('DATETIME')},`,
+  `    ${L('Consulta')}   ${K('VARCHAR')}(${N('50')})`,
+  `);`,
+  ``,
+  C('-- Ingreso de registro de ejemplo'),
+  `${K('INSERT INTO')} ${O('basen8n')}.${O('RegistroInicial')} (${L('ID_Usuario')}, ${L('Fecha')}, ${L('Nombre_Usuario')}, ${L('Parametro')})`,
+  `${K('VALUES')} (`,
+  `    ${N('14257988')},`,
+  `    ${K('CAST')}(${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}),`,
+  `    ${S("'Jonas'")},`,
+  `    ${S("'Ventas'")}`,
+  `);`,
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECCIÓN 8 – Validaciones n8n
+// ══════════════════════════════════════════════════════════════════════════════
+render('s8', [
+  C('-- Fecha del Pacífico'),
+  `${K('DECLARE')} ${V('@fecha_actual')} ${K('DATETIME')} = ${K('CAST')}(`,
+  `    ${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}`,
+  `)`,
+  `${K('DECLARE')} ${V('@usuario')} ${K('VARCHAR')}(${N('50')}) = ${N('14257988')}`,
+  ``,
+  C('-- Validación de existencia del registro en las últimas 4 horas'),
+  `${K('SELECT')} *`,
+  `${K('FROM')}  ${O('basen8n')}.${O('RegistroInicial')} ${L('ri')}`,
+  `${K('WHERE')} ${L('ri')}.${L('Fecha')} ${K('BETWEEN')} ${F('DATEADD')}(${K('HOUR')}, ${N('-4')}, ${V('@fecha_actual')})`,
+  `                      ${K('AND')} ${V('@fecha_actual')}`,
+  `  ${K('AND')} ${L('ri')}.${L('ID_Usuario')} = ${V('@usuario')}`,
+  ``,
+  C('-- Ingreso del pedido'),
+  `${K('INSERT INTO')} ${O('basen8n')}.${O('RegistroPedido')} (${L('ID_Usuario')}, ${L('Fecha')}, ${L('Consulta')})`,
+  `${K('VALUES')} (`,
+  `    ${N('14257988')},`,
+  `    ${K('CAST')}(${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}),`,
+  `    ${S("'A3'")}`,
+  `);`,
+  ``,
+  C('-- Función de comprobación para los nodos n8n'),
+  `${K('DECLARE')} ${V('@fecha_actual')} ${K('DATETIME')} = ${K('CAST')}(`,
+  `    ${F('GETDATE')}() ${K('AT TIME ZONE')} ${S("'UTC'")} ${K('AT TIME ZONE')} ${S("'SA Pacific Standard Time'")} ${K('AS')} ${K('DATETIME')}`,
+  `)`,
+  `${K('DECLARE')} ${V('@usuario')} ${K('VARCHAR')}(${N('50')}) = ${N('14257988')}`,
+  ``,
+  `${K2('IF')} ${K('EXISTS')} (`,
+  `    ${K('SELECT')} ${N('1')}`,
+  `    ${K('FROM')}  ${O('basen8n')}.${O('RegistroInicial')} ${L('ri')}`,
+  `    ${K('WHERE')} ${L('ri')}.${L('Fecha')} ${K('BETWEEN')} ${F('DATEADD')}(${K('HOUR')}, ${N('-4')}, ${V('@fecha_actual')})`,
+  `                          ${K('AND')} ${V('@fecha_actual')}`,
+  `      ${K('AND')} ${L('ri')}.${L('ID_Usuario')} = ${V('@usuario')}`,
+  `      ${K('AND')} ${L('ri')}.${L('Parametro')}  = ${S("'Ventas'")}`,
+  `)`,
+  `${K2('BEGIN')}`,
+  `    ${K('SELECT')} ${S("'existe'")} ${K('AS')} ${L('estado')}  ${C('-- Se colocará la vista del reporte a enviar')}`,
+  `${K2('END')}`,
+  `${K2('ELSE')}`,
+  `${K2('BEGIN')}`,
+  `    ${K('SELECT')} ${S("'no existe'")} ${K('AS')} ${L('estado')}`,
+  `${K2('END')};`,
+]);
+</script>
+</body>
+</html>
