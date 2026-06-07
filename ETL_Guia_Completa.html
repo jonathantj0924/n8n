@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guía ETL — Inteligencia de Negocios</title>
+  <style>
+    :root {
+      --azul:    #2D3FE7;
+      --violeta: #534AB7;
+      --verde:   #1D9E75;
+      --rojo:    #D85A30;
+      --amarillo:#F59E0B;
+      --gris-bg: #F5F6FA;
+      --gris-card:#FFFFFF;
+      --texto:   #1A1A2E;
+      --borde:   #E2E8F0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--gris-bg);
+      color: var(--texto);
+      line-height: 1.7;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D3FE7 60%, #534AB7 100%);
+      color: white;
+      text-align: center;
+      padding: 80px 24px 60px;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: #93C5FD; }
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.85;
+      max-width: 680px;
+      margin: 0 auto 30px;
+    }
+    .hero .pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .hero .pill {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    /* ── NAV / ÍNDICE ── */
+    .nav-index {
+      background: white;
+      border-bottom: 1px solid var(--borde);
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .nav-index a {
+      text-decoration: none;
+      color: var(--violeta);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--borde);
+      transition: all 0.15s;
+    }
+    .nav-index a:hover {
+      background: var(--azul);
+      color: white;
+      border-color: var(--azul);
+    }
+
+    /* ── LAYOUT ── */
+    .contenido { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── SECCIÓN ── */
+    .seccion {
+      background: white;
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 32px;
+      border: 1px solid var(--borde);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .seccion-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--gris-bg);
+    }
+    .seccion-num {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      color: white;
+    }
+    .color-azul    { background: var(--azul); }
+    .color-violeta { background: var(--violeta); }
+    .color-verde   { background: var(--verde); }
+    .color-rojo    { background: var(--rojo); }
+    .color-amarillo{ background: var(--amarillo); }
+    .color-gris    { background: #64748B; }
+    .color-cyan    { background: #0EA5E9; }
+
+    .seccion-titulo h2 { font-size: 1.5rem; font-weight: 700; }
+    .seccion-titulo p  { font-size: 0.9rem; color: #64748B; margin-top: 2px; }
+
+    /* ── TEXTO GENERAL ── */
+    h3 { font-size: 1.15rem; font-weight: 700; margin: 24px 0 10px; }
+    h4 { font-size: 1rem;    font-weight: 700; margin: 18px 0 8px;  color: var(--violeta); }
+    p  { margin-bottom: 14px; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .callout-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+    .callout-body { flex: 1; }
+    .callout-body strong { display: block; margin-bottom: 4px; }
+    .callout.info    { background: #EFF6FF; border-left: 4px solid #3B82F6; }
+    .callout.warning { background: #FFFBEB; border-left: 4px solid #F59E0B; }
+    .callout.danger  { background: #FEF2F2; border-left: 4px solid #EF4444; }
+    .callout.success { background: #F0FDF4; border-left: 4px solid #22C55E; }
+    .callout.tip     { background: #F5F3FF; border-left: 4px solid #8B5CF6; }
+
+    /* ── NIÑO DE 8 AÑOS ── */
+    .explica-nino {
+      background: linear-gradient(135deg, #FFF9E6, #FFF3CC);
+      border: 2px dashed #F59E0B;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin: 16px 0;
+    }
+    .explica-nino .etiqueta {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #92400E;
+      margin-bottom: 6px;
+    }
+    .explica-nino p { margin-bottom: 0; color: #78350F; }
+
+    /* ── CÓDIGO ── */
+    pre {
+      background: #1E1E2E;
+      color: #CDD6F4;
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      margin: 14px 0;
+      line-height: 1.6;
+    }
+    .c-kw   { color: #CBA6F7; } /* keyword  */
+    .c-fn   { color: #89DCEB; } /* function */
+    .c-str  { color: #A6E3A1; } /* string   */
+    .c-num  { color: #FAB387; } /* number   */
+    .c-cmt  { color: #6C7086; } /* comment  */
+    .c-var  { color: #F38BA8; } /* variable */
+    .c-op   { color: #89B4FA; } /* operator */
+
+    /* ── TABLA ── */
+    .tabla-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th {
+      background: var(--gris-bg);
+      font-weight: 700;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--borde);
+    }
+    td { padding: 9px 14px; border-bottom: 1px solid var(--borde); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #F8FAFF; }
+    .badge-verde  { background: #D1FAE5; color: #065F46; border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; font-weight: 700; }
+    .badge-rojo   { background: #FEE2E2; color: #991B1B; border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; font-weight: 700; }
+    .badge-azul   { background: #DBEAFE; color: #1E40AF; border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; font-weight: 700; }
+
+    /* ── GRID CARDS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+    @media(max-width:640px) { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+
+    .mini-card {
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      padding: 16px;
+      background: var(--gris-bg);
+    }
+    .mini-card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .mini-card strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+    .mini-card p { font-size: 0.875rem; color: #475569; margin: 0; }
+
+    /* ── PASOS (timeline) ── */
+    .paso {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .paso::before {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 50px;
+      bottom: -28px;
+      width: 2px;
+      background: var(--borde);
+    }
+    .paso:last-child::before { display: none; }
+    .paso-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--azul);
+      color: white;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+    .paso-body { flex: 1; }
+    .paso-body strong { font-size: 1rem; }
+    .paso-body p { font-size: 0.9rem; color: #475569; margin-top: 4px; }
+
+    /* ── FÓRMULA ── */
+    .formula {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      margin: 16px 0;
+      font-family: 'Georgia', serif;
+      font-size: 1.05rem;
+    }
+
+    /* ── SEPARADOR ── */
+    .sep { border: none; border-top: 2px solid var(--gris-bg); margin: 24px 0; }
+
+    /* ── RESUMEN FINAL ── */
+    .resumen-final {
+      background: linear-gradient(135deg, #1A1A2E, #2D3FE7);
+      color: white;
+      border-radius: 16px;
+      padding: 36px;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .resumen-final h2 { font-size: 1.8rem; margin-bottom: 16px; }
+    .resumen-final p  { opacity: 0.85; max-width: 600px; margin: 0 auto 24px; }
+    .flujo-etl {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .flujo-paso {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .flujo-flecha { font-size: 1.4rem; opacity: 0.5; }
+
+    /* tag de "sesión" */
+    .tag-sesion {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .tag-s2 { background: #DBEAFE; color: #1D4ED8; }
+    .tag-s3 { background: #F3E8FF; color: #7C3AED; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<div class="hero">
+  <div class="badge">Inteligencia de Negocios · Sesiones 2 y 3</div>
+  <h1>Proceso <span>ETL</span> completo<br>desde cero</h1>
+  <p>Todo lo que necesitas saber para ejecutar tu primer ETL en ciencia de datos, explicado paso a paso y en palabras simples.</p>
+  <div class="pills">
+    <span class="pill">🐍 Python · Pandas · NumPy</span>
+    <span class="pill">📊 Dataset retail BIZDATA</span>
+    <span class="pill">✅ Sesión 2 + Sesión 3</span>
+  </div>
+</div>
+
+<!-- ════════════════════ ÍNDICE ════════════════════ -->
+<nav class="nav-index">
+  <a href="#que-es-etl">¿Qué es ETL?</a>
+  <a href="#regla-oro">Regla de Oro</a>
+  <a href="#carga">0 · Carga</a>
+  <a href="#auditoria">1 · Auditoría</a>
+  <a href="#tipos">2 · Tipos de datos</a>
+  <a href="#nulos">3 · Nulos</a>
+  <a href="#outliers">4 · Outliers</a>
+  <a href="#duplicados">5 · Duplicados</a>
+  <a href="#texto">6 · Texto</a>
+  <a href="#resumen">Resumen</a>
+</nav>
+
+<!-- ════════════════════ CONTENIDO ════════════════════ -->
+<div class="contenido">
+
+<!-- ─── ¿QUÉ ES ETL? ─── -->
+<section class="seccion" id="que-es-etl">
+  <div class="seccion-header">
+    <div class="seccion-num color-azul">🔄</div>
+    <div class="seccion-titulo">
+      <h2>¿Qué es ETL y por qué existe?</h2>
+      <p>La base de toda Inteligencia de Negocios</p>
+    </div>
+  </div>
+
+  <p><strong>ETL</strong> son las siglas de <strong>E</strong>xtract (Extraer) → <strong>T</strong>ransform (Transformar) → <strong>L</strong>oad (Cargar). Es el proceso por el cual los datos pasan de sus fuentes originales (bases de datos, Excel, APIs) a un estado <em>limpio y utilizable</em> para análisis y toma de decisiones.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que tienes una caja llena de LEGO de miles de colores mezclados, sucios, con algunas piezas rotas y otras repetidas. El ETL es el proceso de <strong>sacar los LEGO de la caja</strong> (Extract), <strong>lavarlos, ordenarlos por color y separar los rotos</strong> (Transform), y <strong>guardarlos ordenados en cajitas etiquetadas</strong> (Load) para que cuando quieras construir algo, todo esté listo y limpio.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="mini-card">
+      <div class="icon">📤</div>
+      <strong>EXTRACT — Extraer</strong>
+      <p>Leer los datos desde la fuente original sin tocarlos ni modificarlos. Solo observar.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🔧</div>
+      <strong>TRANSFORM — Transformar</strong>
+      <p>Limpiar, corregir, estandarizar y enriquecer los datos para que sean confiables.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">📥</div>
+      <strong>LOAD — Cargar</strong>
+      <p>Guardar los datos limpios en el destino final (Data Warehouse, base de datos, archivo).</p>
+    </div>
+  </div>
+
+  <h3>¿Por qué es la fase más crítica del BI?</h3>
+  <div class="callout danger">
+    <div class="callout-icon">🗑️</div>
+    <div class="callout-body">
+      <strong>"Garbage in, garbage out."</strong>
+      Si los datos están sucios cuando entran, el análisis y los reportes también estarán sucios. Un KPI calculado sobre datos incorrectos lleva a decisiones de negocio equivocadas.
+    </div>
+  </div>
+
+  <p><strong>Consecuencias reales de saltarse el ETL:</strong></p>
+  <ul style="margin-left:20px; margin-bottom:14px; color:#475569;">
+    <li>📈 Un KPI de ventas inflado por <strong>registros duplicados</strong></li>
+    <li>💸 Un promedio de ticket distorsionado por <strong>valores atípicos no detectados</strong></li>
+    <li>👥 Una segmentación de clientes incorrecta por <strong>nulos mal tratados</strong></li>
+    <li>❌ Decisiones de negocio tomadas sobre <strong>información falsa</strong></li>
+  </ul>
+
+  <h3>Los 6 problemas de calidad de datos que atacamos</h3>
+  <div class="grid-2">
+    <div class="mini-card"><div class="icon">🔢</div><strong>Tipos incorrectos</strong><p>Una fecha guardada como texto, o un número guardado como texto. El sistema no puede operar con ellos correctamente.</p></div>
+    <div class="mini-card"><div class="icon">🕳️</div><strong>Valores nulos (vacíos)</strong><p>Celdas sin información. Según la causa, se tratan de forma diferente.</p></div>
+    <div class="mini-card"><div class="icon">📋</div><strong>Duplicados</strong><p>La misma fila (o casi) aparece más de una vez. Inflan conteos y promedios.</p></div>
+    <div class="mini-card"><div class="icon">🔤</div><strong>Inconsistencias de texto</strong><p>"Efectivo" vs "efectivo" vs "EFECTIVO" — el sistema los ve como 3 cosas diferentes.</p></div>
+    <div class="mini-card"><div class="icon">🚀</div><strong>Outliers (valores atípicos)</strong><p>Valores extremadamente altos o bajos que distorsionan estadísticas y modelos.</p></div>
+    <div class="mini-card"><div class="icon">🚫</div><strong>Violación de dominio</strong><p>Un valor que existe y no es nulo, pero es imposible en el contexto real (ej: cantidad = -5 productos).</p></div>
+  </div>
+</section>
+
+<!-- ─── REGLA DE ORO ─── -->
+<section class="seccion" id="regla-oro">
+  <div class="seccion-header">
+    <div class="seccion-num color-amarillo">⭐</div>
+    <div class="seccion-titulo">
+      <h2>La Regla de Oro del ETL</h2>
+      <p>La regla más importante antes de tocar cualquier archivo</p>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Nunca modifiques el archivo original.</strong>
+      Siempre trabajamos sobre una <strong>copia</strong> y guardamos el resultado con un nombre nuevo. El archivo <code>BIZDATA_dataset_maestro_retail.xlsx</code> <em>nunca se toca</em>.
+    </div>
+  </div>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Es como cuando tienes un dibujo muy importante y quieres colorearlo. <strong>No coloreas el original</strong> — primero sacas una fotocopia, y coloreas la fotocopia. Así, si te equivocas, el original sigue intacto y puedes sacar otra fotocopia y empezar de nuevo.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="icon">🔒</div>
+      <strong>Archivo original (solo lectura)</strong>
+      <p><code>BIZDATA_dataset_maestro_retail.xlsx</code><br>Solo lo leemos. Jamás lo guardamos con cambios.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">✏️</div>
+      <strong>Copia de trabajo (escribimos aquí)</strong>
+      <p><code>fv = fact_ventas.copy()</code><br>Sobre esta variable hacemos todos los cambios del ETL.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PASO 0: CARGA ─── -->
+<section class="seccion" id="carga">
+  <div class="seccion-header">
+    <div class="seccion-num color-cyan">0</div>
+    <div class="seccion-titulo">
+      <h2>Paso 0 — Preparación y Carga de Datos <span class="tag-sesion tag-s2">Sesión 2</span></h2>
+      <p>Conectar al entorno y leer el archivo Excel</p>
+    </div>
+  </div>
+
+  <h3>¿Por qué cargar datos desde Excel?</h3>
+  <p>Los datos del mundo real viven en archivos Excel, bases de datos, APIs, etc. En este proyecto, nuestro dataset principal es un archivo Excel con <strong>6 hojas</strong> — cada una representa una tabla diferente del modelo de datos estrella.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que el Excel es como un libro con 6 capítulos. Cada capítulo habla de una cosa diferente: uno habla de las ventas, otro de los clientes, otro de los productos, etc. Python va a <strong>leer cada capítulo</strong> y guardarlo en su memoria para que podamos trabajar con él.</p>
+  </div>
+
+  <h3>Las 6 tablas del dataset BIZDATA</h3>
+  <div class="tabla-wrap">
+    <table>
+      <tr><th>Nombre en el código</th><th>Hoja en Excel</th><th>¿Qué contiene?</th><th>Tipo</th></tr>
+      <tr><td><code>fact_ventas</code></td><td>fact_ventas</td><td>Cada fila es una transacción de venta. Es la tabla principal.</td><td><span class="badge-rojo">FACT</span></td></tr>
+      <tr><td><code>dim_clientes</code></td><td>dim_clientes</td><td>Información de cada cliente (nombre, segmento, fecha registro).</td><td><span class="badge-azul">DIM</span></td></tr>
+      <tr><td><code>dim_productos</code></td><td>dim_productos</td><td>Información de cada producto (nombre, categoría, precio).</td><td><span class="badge-azul">DIM</span></td></tr>
+      <tr><td><code>dim_sucursales</code></td><td>dim_sucursales</td><td>Información de cada sucursal (ciudad, región).</td><td><span class="badge-azul">DIM</span></td></tr>
+      <tr><td><code>dim_tiempo</code></td><td>dim_tiempo</td><td>Calendario (fechas, meses, trimestres, años).</td><td><span class="badge-azul">DIM</span></td></tr>
+      <tr><td><code>dim_proveedores</code></td><td>dim_proveedores</td><td>Información de proveedores de productos.</td><td><span class="badge-azul">DIM</span></td></tr>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>FACT vs DIM — ¿Cuál es la diferencia?</strong>
+      Las tablas <strong>FACT</strong> (hechos) contienen las transacciones: qué se vendió, cuándo y cuánto. Las tablas <strong>DIM</strong> (dimensiones) son como "diccionarios" que explican quiénes son los clientes, qué son los productos, etc. Las FACT apuntan a las DIM con IDs para enriquecer la información.
+    </div>
+  </div>
+
+  <h3>El código de carga</h3>
+<pre><span class="c-kw">import</span> pandas <span class="c-kw">as</span> pd
+<span class="c-kw">import</span> numpy  <span class="c-kw">as</span> np
+<span class="c-kw">import</span> os
+
+<span class="c-cmt"># ── Ruta al archivo original (solo lectura) ──────────────────</span>
+RUTA_EXCEL = <span class="c-str">'/content/drive/MyDrive/MAESTRIA_BI/BIZDATA_dataset_maestro_retail.xlsx'</span>
+
+<span class="c-cmt"># ── Leer cada hoja del Excel ────────────────────────────────</span>
+fact_ventas     = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'fact_ventas'</span>)
+dim_clientes    = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'dim_clientes'</span>)
+dim_productos   = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'dim_productos'</span>)
+dim_sucursales  = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'dim_sucursales'</span>)
+dim_tiempo      = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'dim_tiempo'</span>)
+dim_proveedores = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="c-str">'dim_proveedores'</span>)
+
+<span class="c-cmt"># ── ⭐ REGLA DE ORO: crear copia de trabajo ──────────────────</span>
+<span class="c-cmt"># Nunca modificamos fact_ventas directamente</span>
+fv = fact_ventas.copy()
+
+<span class="c-fn">print</span>(<span class="c-str">"✅ Dataset cargado. Trabajando sobre copia de fact_ventas."</span>)
+<span class="c-fn">print</span>(f<span class="c-str">"   Filas: {len(fv):,} | Columnas: {fv.shape[1]}"</span>)</pre>
+
+  <div class="callout tip">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>¿Qué hace <code>pd.read_excel()</code>?</strong>
+      Lee el archivo Excel y lo convierte en un "DataFrame" — que es básicamente una tabla de datos en la memoria de Python, igual a la hoja de Excel pero que podemos manipular con código.
+    </div>
+  </div>
+</section>
+
+<!-- ─── PASO 1: AUDITORÍA ─── -->
+<section class="seccion" id="auditoria">
+  <div class="seccion-header">
+    <div class="seccion-num color-azul">1</div>
+    <div class="seccion-titulo">
+      <h2>Paso 1 — Auditoría de los Datos <span class="tag-sesion tag-s2">Sesión 2</span></h2>
+      <p>Diagnosticar antes de operar. Nunca asumas — verifica.</p>
+    </div>
+  </div>
+
+  <p>Antes de cambiar cualquier cosa, necesitamos <strong>conocer el estado real de los datos</strong>. La auditoría es como hacerle un chequeo médico a los datos: revisamos todo para saber qué está bien y qué necesita tratamiento.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que alguien te da una mochila llena de ropa para lavar. Antes de meterla a la lavadora, <strong>revisas pieza por pieza</strong>: ¿hay algo blanco entre la ropa de color? ¿Hay algo que no debe mojarse? ¿Hay piezas que ya están sucias de una manera especial? La auditoría es esa revisión inicial.</p>
+  </div>
+
+  <h3>1.1 — Auditoría Inicial</h3>
+  <p>Generamos un reporte completo de calidad sobre el DataFrame principal. Esta función no modifica nada — solo <strong>describe el estado actual</strong>.</p>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">auditar_dataframe</span>(df, nombre):
+    <span class="c-str">"""Reporte de calidad completo. No modifica datos, solo describe."""</span>
+    <span class="c-fn">print</span>(<span class="c-str">"="</span> * <span class="c-num">60</span>)
+    <span class="c-fn">print</span>(f<span class="c-str">"  REPORTE DE AUDITORÍA — {nombre}"</span>)
+    <span class="c-fn">print</span>(<span class="c-str">"="</span> * <span class="c-num">60</span>)
+    <span class="c-fn">print</span>(f<span class="c-str">"\n  Dimensiones : {df.shape[0]:,} filas × {df.shape[1]} columnas"</span>)
+    <span class="c-fn">print</span>(f<span class="c-str">"  Memoria     : {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB"</span>)
+
+    <span class="c-fn">print</span>(<span class="c-str">"\n  ── TIPOS DE DATOS ──"</span>)
+    <span class="c-kw">for</span> col <span class="c-kw">in</span> df.columns:
+        dtype   = <span class="c-fn">str</span>(df[col].dtype)
+        nulos   = df[col].isnull().sum()       <span class="c-cmt"># cuántos vacíos</span>
+        pct     = nulos / <span class="c-fn">len</span>(df) * <span class="c-num">100</span>       <span class="c-cmt"># porcentaje de vacíos</span>
+        unicos  = df[col].nunique()            <span class="c-cmt"># cuántos valores distintos</span>
+        flag    = <span class="c-str">" ⚠️"</span> <span class="c-kw">if</span> nulos > <span class="c-num">0</span> <span class="c-kw">else</span> <span class="c-str">""</span>  <span class="c-cmt"># marcar si hay nulos</span>
+        <span class="c-fn">print</span>(f<span class="c-str">"  {col:<22} {dtype:<12} nulos:{nulos:>5} ({pct:>4.1f}%) únicos:{unicos:>6}{flag}"</span>)
+
+    <span class="c-fn">print</span>(<span class="c-str">"\n  ── DUPLICADOS ──"</span>)
+    dups = df.duplicated().sum()
+    <span class="c-fn">print</span>(f<span class="c-str">"  Filas duplicadas: {dups:,} ({dups/len(df)*100:.2f}%)"</span>)
+
+    <span class="c-fn">print</span>(<span class="c-str">"\n  ── ESTADÍSTICAS NUMÉRICAS ──"</span>)
+    <span class="c-fn">print</span>(df.select_dtypes(include=<span class="c-str">'number'</span>).describe().round(<span class="c-num">2</span>).to_string())
+
+<span class="c-cmt"># Ejecutar sobre la tabla principal</span>
+<span class="c-fn">auditar_dataframe</span>(fv, <span class="c-str">'fact_ventas'</span>)</pre>
+
+  <h4>Preguntas que debes hacerte al ver el reporte de auditoría:</h4>
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="icon">❓</div>
+      <strong>¿Qué columnas tienen valores nulos?</strong>
+      <p>Las marcadas con ⚠️ necesitan tratamiento especial.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">❓</div>
+      <strong>¿Hay filas duplicadas?</strong>
+      <p>Un duplicado infla las estadísticas y los KPIs.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">❓</div>
+      <strong>¿Los tipos de datos son correctos?</strong>
+      <p>¿Las fechas son fechas? ¿Los números son números?</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">❓</div>
+      <strong>¿Hay valores numéricos sospechosos?</strong>
+      <p>Mínimos negativos, máximos extremos, medias raras.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <h3>1.2 — Auditoría de Columnas Categóricas (texto)</h3>
+  <p>Las estadísticas numéricas no detectan inconsistencias de texto. Necesitamos ver la distribución de los valores de texto para encontrar errores como "efectivo" vs "Efectivo".</p>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">auditar_categoricas</span>(df, columnas):
+    <span class="c-str">"""Muestra cuántas veces aparece cada valor en columnas de texto."""</span>
+    <span class="c-kw">for</span> col <span class="c-kw">in</span> columnas:
+        <span class="c-fn">print</span>(f<span class="c-str">"\n  Columna: '{col}'"</span>)
+        conteo = df[col].value_counts(dropna=<span class="c-kw">False</span>)  <span class="c-cmt"># incluye NaN</span>
+        <span class="c-kw">for</span> valor, n <span class="c-kw">in</span> conteo.items():
+            pct   = n / <span class="c-fn">len</span>(df) * <span class="c-num">100</span>
+            label = <span class="c-fn">str</span>(valor) <span class="c-kw">if</span> pd.notna(valor) <span class="c-kw">else</span> <span class="c-str">'NaN (nulo)'</span>
+            <span class="c-fn">print</span>(f<span class="c-str">"  {label:<25} {n:>6,}  {pct:>5.1f}%"</span>)
+
+<span class="c-fn">auditar_categoricas</span>(fv, [<span class="c-str">'canal'</span>, <span class="c-str">'metodo_pago'</span>, <span class="c-str">'devolucion'</span>])</pre>
+
+  <hr class="sep">
+
+  <h3>1.3 — Auditoría de Rangos Numéricos</h3>
+  <p>Un dato puede ser técnicamente válido (no nulo, tipo correcto) pero <strong>contextualmente imposible</strong>. Por ejemplo: ¿puede haber una cantidad de -5 productos vendidos? ¿Un precio de $0?</p>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">auditar_rangos</span>(df, columnas_reglas):
+    <span class="c-str">"""
+    Verifica si los valores numéricos están dentro de rangos esperados.
+    Las reglas de negocio las DEFINES TÚ — no el sistema.
+    """</span>
+    <span class="c-kw">for</span> col, (minimo, maximo) <span class="c-kw">in</span> columnas_reglas.items():
+        fuera  = df[(df[col] < minimo) | (df[col] > maximo)]
+        estado = <span class="c-str">"⚠️  REVISAR"</span> <span class="c-kw">if</span> <span class="c-fn">len</span>(fuera) > <span class="c-num">0</span> <span class="c-kw">else</span> <span class="c-str">"✅ OK"</span>
+        <span class="c-fn">print</span>(f<span class="c-str">"  {col}: rango esperado [{minimo} – {maximo}] | fuera: {len(fuera):,} filas  {estado}"</span>)
+
+<span class="c-cmt"># Reglas de negocio para BIZDATA Retail</span>
+reglas = {
+    <span class="c-str">'cantidad'</span>        : (<span class="c-num">1</span>,    <span class="c-num">20</span>),
+    <span class="c-str">'precio_unitario'</span> : (<span class="c-num">0.50</span>, <span class="c-num">1500</span>),
+    <span class="c-str">'descuento_pct'</span>   : (<span class="c-num">0</span>,    <span class="c-num">0.50</span>),
+    <span class="c-str">'total_venta'</span>     : (<span class="c-num">0.50</span>, <span class="c-num">5000</span>),
+    <span class="c-str">'costo_total'</span>     : (<span class="c-num">0.50</span>, <span class="c-num">4000</span>),
+    <span class="c-str">'margen_usd'</span>      : (-<span class="c-num">500</span>, <span class="c-num">3000</span>),
+}
+
+<span class="c-fn">auditar_rangos</span>(fv, reglas)</pre>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Importante:</strong> Las reglas de negocio las defines <em>tú</em>, no el sistema. Requieren conocimiento del dominio: ¿cuánto puede costar un producto? ¿Cuántas unidades se pueden vender en una sola transacción?
+    </div>
+  </div>
+
+  <h3>1.4 — Auditoría de todas las dimensiones</h3>
+  <p>No solo auditamos <code>fact_ventas</code>. Las tablas de dimensión también pueden tener problemas.</p>
+
+<pre>tablas = {
+    <span class="c-str">'dim_clientes'</span>    : dim_clientes,
+    <span class="c-str">'dim_productos'</span>   : dim_productos,
+    <span class="c-str">'dim_sucursales'</span>  : dim_sucursales,
+    <span class="c-str">'dim_tiempo'</span>      : dim_tiempo,
+    <span class="c-str">'dim_proveedores'</span> : dim_proveedores,
+}
+
+<span class="c-kw">for</span> nombre, df <span class="c-kw">in</span> tablas.items():
+    <span class="c-fn">auditar_dataframe</span>(df, nombre)</pre>
+</section>
+
+<!-- ─── PASO 2: TIPOS DE DATOS ─── -->
+<section class="seccion" id="tipos">
+  <div class="seccion-header">
+    <div class="seccion-num color-violeta">2</div>
+    <div class="seccion-titulo">
+      <h2>Paso 2 — Tipos de Datos y Corrección de Fechas <span class="tag-sesion tag-s2">Sesión 2</span></h2>
+      <p>Asegurarse de que cada columna tiene el tipo correcto</p>
+    </div>
+  </div>
+
+  <h3>¿Por qué importan los tipos de datos?</h3>
+  <p>Pandas asigna tipos automáticamente al leer un archivo. Pero "automático" no significa "correcto". Un tipo incorrecto significa que no puedes hacer operaciones con esa columna.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que tienes una caja con números escritos en papel, pero alguien los escribió con letras: "cinco", "diez", "tres". Python no puede sumar esos números porque para él son <strong>palabras</strong>, no números. Hay que convertirlos a formato número primero.</p>
+  </div>
+
+  <div class="tabla-wrap">
+    <table>
+      <tr><th>Tipo en Pandas</th><th>¿Qué guarda?</th><th>Ejemplo</th></tr>
+      <tr><td><code>int64</code></td><td>Números enteros (sin decimales)</td><td>1, 5, 100, -3</td></tr>
+      <tr><td><code>float64</code></td><td>Números con decimales</td><td>1.5, 99.99, -0.05</td></tr>
+      <tr><td><code>object</code></td><td>Texto (strings)</td><td>"Efectivo", "Lima"</td></tr>
+      <tr><td><code>datetime64</code></td><td>Fechas y horas</td><td>2024-01-15</td></tr>
+      <tr><td><code>bool</code></td><td>Verdadero / Falso</td><td>True, False</td></tr>
+      <tr><td><code>category</code></td><td>Texto con pocos valores posibles (ahorra memoria)</td><td>"Canal", "Método pago"</td></tr>
+    </table>
+  </div>
+
+  <h3>2.1 — Diagnóstico de tipos actuales</h3>
+<pre><span class="c-cmt"># Comparar tipo actual vs tipo esperado</span>
+tipos_esperados = {
+    <span class="c-str">'id_venta'</span>        : <span class="c-str">'object'</span>,    <span class="c-cmt"># ID único → texto</span>
+    <span class="c-str">'cantidad'</span>        : <span class="c-str">'int64'</span>,     <span class="c-cmt"># entero, no puede ser 1.5 unidades</span>
+    <span class="c-str">'precio_unitario'</span> : <span class="c-str">'float64'</span>,   <span class="c-cmt"># precio con decimales</span>
+    <span class="c-str">'descuento_pct'</span>   : <span class="c-str">'float64'</span>,   <span class="c-cmt"># porcentaje con decimales</span>
+    <span class="c-str">'total_venta'</span>     : <span class="c-str">'float64'</span>,
+    <span class="c-str">'canal'</span>           : <span class="c-str">'object'</span>,     <span class="c-cmt"># texto</span>
+    <span class="c-str">'metodo_pago'</span>     : <span class="c-str">'object'</span>,
+    <span class="c-str">'devolucion'</span>      : <span class="c-str">'int64'</span>,
+}
+
+<span class="c-kw">for</span> col, tipo_esp <span class="c-kw">in</span> tipos_esperados.items():
+    tipo_actual = <span class="c-fn">str</span>(fv[col].dtype)
+    ok = <span class="c-str">"✅"</span> <span class="c-kw">if</span> tipo_actual == tipo_esp <span class="c-kw">else</span> <span class="c-str">"⚠️  CORREGIR"</span>
+    <span class="c-fn">print</span>(f<span class="c-str">"  {col:<22} {tipo_actual:<14} {ok}"</span>)</pre>
+
+  <h3>2.2 — Corrección de tipos numéricos</h3>
+<pre><span class="c-cmt"># Convertir columnas enteras a int64 (solo si no tienen nulos)</span>
+<span class="c-kw">for</span> col <span class="c-kw">in</span> [<span class="c-str">'cantidad'</span>, <span class="c-str">'devolucion'</span>]:
+    nulos = fv[col].isnull().sum()
+    <span class="c-kw">if</span> nulos == <span class="c-num">0</span>:
+        fv[col] = fv[col].astype(<span class="c-str">'int64'</span>)
+        <span class="c-fn">print</span>(f<span class="c-str">"✅ {col} convertido a int64"</span>)
+    <span class="c-kw">else</span>:
+        <span class="c-fn">print</span>(f<span class="c-str">"⚠️  {col} tiene {nulos} nulos — resolver nulos primero"</span>)</pre>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>¿Por qué no se puede convertir a int64 si hay nulos?</strong>
+      El tipo <code>int64</code> no puede almacenar valores vacíos (NaN). Si una columna tiene nulos, Pandas la guarda como <code>float64</code> porque los flotantes sí pueden representar NaN. Primero hay que resolver los nulos (Paso 3), y luego convertir.
+    </div>
+  </div>
+
+  <h3>2.3 — Corrección de fechas</h3>
+  <p>Las fechas leídas desde Excel a menudo llegan como texto (<code>object</code>). Necesitamos convertirlas a <code>datetime64</code> para poder calcular diferencias de días, filtrar por mes, etc.</p>
+
+<pre><span class="c-cmt"># Verificar tipo actual</span>
+<span class="c-fn">print</span>(f<span class="c-str">"Tipo actual de 'fecha': {dim_tiempo['fecha'].dtype}"</span>)
+<span class="c-cmt"># Probablemente dirá: object (texto)</span>
+
+<span class="c-cmt"># Detectar fechas con formato inválido antes de convertir</span>
+<span class="c-kw">def</span> <span class="c-fn">detectar_fechas_invalidas</span>(serie, formato=<span class="c-str">'%Y-%m-%d'</span>):
+    invalidas = []
+    <span class="c-kw">for</span> idx, val <span class="c-kw">in</span> serie.items():
+        <span class="c-kw">try</span>:
+            pd.to_datetime(val, format=formato)
+        <span class="c-kw">except</span>:
+            invalidas.append({<span class="c-str">'indice'</span>: idx, <span class="c-str">'valor'</span>: val})
+    <span class="c-kw">return</span> pd.DataFrame(invalidas)
+
+<span class="c-cmt"># Convertir a datetime</span>
+dim_tiempo[<span class="c-str">'fecha'</span>] = pd.to_datetime(dim_tiempo[<span class="c-str">'fecha'</span>], format=<span class="c-str">'%Y-%m-%d'</span>)
+<span class="c-fn">print</span>(f<span class="c-str">"✅ Tipo después: {dim_tiempo['fecha'].dtype}"</span>)
+<span class="c-cmt"># Ahora podemos calcular: primer día, último día, rango total...</span></pre>
+
+  <h3>2.4 — Estandarización de mayúsculas/minúsculas</h3>
+  <p>Antes de hacer cualquier análisis sobre texto, eliminamos espacios extra y unificamos capitalización.</p>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">estandarizar_capitalización</span>(df, columnas):
+    <span class="c-str">"""
+    .str.strip()  → elimina espacios al inicio y al final
+    .str.title()  → Primera Letra De Cada Palabra En Mayúscula
+    """</span>
+    <span class="c-kw">for</span> col <span class="c-kw">in</span> columnas:
+        original  = df[col].copy()
+        df[col]   = df[col].str.strip().str.title()
+        cambios   = (original != df[col]).sum()
+        <span class="c-fn">print</span>(f<span class="c-str">"  {col:<20} → {cambios:>4} valores modificados"</span>)
+
+<span class="c-fn">estandarizar_capitalización</span>(fv, [<span class="c-str">'canal'</span>, <span class="c-str">'metodo_pago'</span>])</pre>
+
+  <h3>2.5 — Convertir a tipo <code>category</code> para ahorrar memoria</h3>
+
+<pre><span class="c-cmt"># Las columnas con pocos valores únicos (<20) se benefician del tipo category</span>
+mem_antes = fv.memory_usage(deep=<span class="c-kw">True</span>).sum() / <span class="c-num">1024</span>**<span class="c-num">2</span>
+
+<span class="c-kw">for</span> col <span class="c-kw">in</span> [<span class="c-str">'canal'</span>, <span class="c-str">'metodo_pago'</span>]:
+    <span class="c-kw">if</span> fv[col].nunique() < <span class="c-num">20</span>:
+        fv[col] = fv[col].astype(<span class="c-str">'category'</span>)
+
+mem_despues = fv.memory_usage(deep=<span class="c-kw">True</span>).sum() / <span class="c-num">1024</span>**<span class="c-num">2</span>
+<span class="c-fn">print</span>(f<span class="c-str">"  Reducción de memoria: {mem_antes - mem_despues:.2f} MB"</span>)</pre>
+</section>
+
+<!-- ─── PASO 3: NULOS ─── -->
+<section class="seccion" id="nulos">
+  <div class="seccion-header">
+    <div class="seccion-num color-verde">3</div>
+    <div class="seccion-titulo">
+      <h2>Paso 3 — Tratamiento de Valores Nulos <span class="tag-sesion tag-s2">Sesión 2</span></h2>
+      <p>Los datos faltantes no son todos iguales — primero entender, luego decidir</p>
+    </div>
+  </div>
+
+  <p>Un <strong>valor nulo</strong> (o NaN — "Not a Number") es una celda vacía. Pero no todos los nulos son iguales: la causa del nulo determina cómo tratarlo.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que en una lista de asistencia hay varios nombres en blanco. ¿Por qué están en blanco? Puede ser porque: 1) el maestro olvidó escribirlos al azar, 2) los estudiantes que faltan más son precisamente los que pagan menos, 3) el alumno se fue antes de que pasaran lista. Cada causa tiene una solución diferente — no puedes tratarlos todos igual.</p>
+  </div>
+
+  <h3>3.1 — Los 3 mecanismos de ausencia de datos</h3>
+
+  <div class="grid-3">
+    <div class="mini-card">
+      <div class="icon">🎲</div>
+      <strong>MCAR</strong>
+      <p><em>Missing Completely At Random</em><br>El dato falta por pura casualidad, sin relación con ninguna variable.</p>
+      <p style="margin-top:8px;font-size:0.8rem;color:#059669;"><strong>Ejemplo:</strong> El sistema tuvo un corte de luz de 2 min y no registró el método de pago de 15 transacciones al azar.</p>
+      <p style="font-size:0.8rem;color:#64748B;margin-top:4px;"><strong>Acción:</strong> Se puede eliminar o imputar sin sesgar el análisis.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🔗</div>
+      <strong>MAR</strong>
+      <p><em>Missing At Random</em><br>El dato falta de forma relacionada con otras variables observadas.</p>
+      <p style="margin-top:8px;font-size:0.8rem;color:#D97706;"><strong>Ejemplo:</strong> Los clientes que pagan en efectivo tienden a no registrar el canal de venta.</p>
+      <p style="font-size:0.8rem;color:#64748B;margin-top:4px;"><strong>Acción:</strong> Imputar usando las otras variables como predictores.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🎭</div>
+      <strong>MNAR</strong>
+      <p><em>Missing Not At Random</em><br>El dato falta por razones relacionadas con el propio valor no observado.</p>
+      <p style="margin-top:8px;font-size:0.8rem;color:#DC2626;"><strong>Ejemplo:</strong> Clientes con transacciones muy altas no registran el método de pago intencionalmente.</p>
+      <p style="font-size:0.8rem;color:#64748B;margin-top:4px;"><strong>Acción:</strong> No hay solución estadística perfecta. Requiere criterio de negocio.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <strong>Regla pragmática:</strong>
+      En el 80% de los casos no sabrás con certeza el mecanismo. Si el porcentaje de nulos es <strong>&lt;5%</strong> y no hay patrón visible → imputar con moda o mediana. Si es <strong>&gt;10%</strong> → investigar antes de decidir.
+    </div>
+  </div>
+
+  <h3>3.2 — Técnicas de imputación</h3>
+  <p><strong>Imputar</strong> significa "rellenar" los valores faltantes con un valor calculado o inferido.</p>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="icon">🔤</div>
+      <strong>Para columnas de texto (categóricas)</strong>
+      <ul style="margin-left:16px;font-size:0.875rem;color:#475569;">
+        <li><strong>Moda:</strong> reemplazar con el valor más frecuente</li>
+        <li><strong>"Desconocido":</strong> cuando no se puede inferir</li>
+        <li><strong>Condicional:</strong> la moda dentro de un grupo</li>
+      </ul>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🔢</div>
+      <strong>Para columnas numéricas</strong>
+      <ul style="margin-left:16px;font-size:0.875rem;color:#475569;">
+        <li><strong>Media:</strong> solo si distribución es simétrica (sin outliers)</li>
+        <li><strong>Mediana:</strong> cuando hay outliers ← más robusta</li>
+        <li><strong>Por grupo:</strong> media/mediana dentro de un segmento</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Advertencia estadística:</strong> Imputar con la <strong>media</strong> en presencia de outliers introduce sesgo. Siempre usa la <strong>mediana</strong> cuando hay valores extremos.
+    </div>
+  </div>
+
+  <h3>3.3 — Código de tratamiento de nulos</h3>
+
+<pre><span class="c-cmt"># 1. Identificar nulos por columna</span>
+reporte_nulos = fv.isnull().sum()
+reporte_pct   = reporte_nulos / <span class="c-fn">len</span>(fv) * <span class="c-num">100</span>
+
+<span class="c-fn">print</span>(<span class="c-str">"NULOS POR COLUMNA:\n"</span>)
+<span class="c-kw">for</span> col <span class="c-kw">in</span> fv.columns:
+    n   = reporte_nulos[col]
+    pct = reporte_pct[col]
+    <span class="c-kw">if</span> n > <span class="c-num">0</span>:
+        <span class="c-fn">print</span>(f<span class="c-str">"  ⚠️  {col:<22} {n:>6,} nulos ({pct:.1f}%)"</span>)
+
+<span class="c-cmt"># ─────────────────────────────────────────────────────────────</span>
+<span class="c-cmt"># 2. Imputar columnas categóricas con la MODA</span>
+moda_canal      = fv[<span class="c-str">'canal'</span>].mode()[<span class="c-num">0</span>]
+moda_pago       = fv[<span class="c-str">'metodo_pago'</span>].mode()[<span class="c-num">0</span>]
+
+fv[<span class="c-str">'canal'</span>].fillna(moda_canal, inplace=<span class="c-kw">True</span>)
+fv[<span class="c-str">'metodo_pago'</span>].fillna(moda_pago, inplace=<span class="c-kw">True</span>)
+
+<span class="c-cmt"># 3. Imputar columnas numéricas con la MEDIANA</span>
+mediana_desc    = fv[<span class="c-str">'descuento_pct'</span>].median()
+fv[<span class="c-str">'descuento_pct'</span>].fillna(mediana_desc, inplace=<span class="c-kw">True</span>)
+
+<span class="c-cmt"># 4. Verificar que no quedan nulos</span>
+<span class="c-fn">print</span>(f<span class="c-str">"\nNulos restantes: {fv.isnull().sum().sum()}"</span>)
+
+<span class="c-cmt"># 5. Guardar checkpoint</span>
+fv.to_excel(<span class="c-str">'fv_checkpoint_nulos.xlsx'</span>, index=<span class="c-kw">False</span>)
+<span class="c-fn">print</span>(<span class="c-str">"✅ Checkpoint guardado"</span>)</pre>
+</section>
+
+<!-- ─── PASO 4: OUTLIERS ─── -->
+<section class="seccion" id="outliers">
+  <div class="seccion-header">
+    <div class="seccion-num color-rojo">4</div>
+    <div class="seccion-titulo">
+      <h2>Paso 4 — Outliers (Valores Atípicos) <span class="tag-sesion tag-s3">Sesión 3</span></h2>
+      <p>Detectar y decidir qué hacer con valores extremos</p>
+    </div>
+  </div>
+
+  <h3>¿Qué es un outlier?</h3>
+  <p>Un <strong>outlier</strong> (valor atípico) es una observación que se aleja significativamente del resto de los datos. Existen dos tipos fundamentales:</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que mides la estatura de 30 niños de tu salón. La mayoría mide entre 1.20 m y 1.40 m. De repente aparece alguien que mide 3 metros. Ese valor <strong>raro y extremo</strong> es un outlier. Puede ser que alguien escribió mal el número (un error), o puede ser que realmente hay un niño inusualmente alto (un evento real). ¡Tienes que averiguar cuál es antes de decidir qué hacer!</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="icon">🐛</div>
+      <strong>Outlier por Error</strong>
+      <p>Es un error de captura, sistema o proceso. <em>Debe corregirse</em>.</p>
+      <p style="margin-top:8px;font-size:0.8rem;color:#DC2626;"><strong>Ejemplo:</strong> Una venta de $83,850 que debería ser $838.50 — el sistema multiplicó por 100 por error.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🦄</div>
+      <strong>Outlier Real (Evento Real)</strong>
+      <p>Es un evento genuinamente extremo. <em>No debe eliminarse</em>.</p>
+      <p style="margin-top:8px;font-size:0.8rem;color:#059669;"><strong>Ejemplo:</strong> Una empresa compró 500 unidades de un producto en una sola compra corporativa.</p>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>Regla crítica:</strong> Nunca elimines un outlier sin primero determinar si es un error o un evento real. Eliminar eventos reales extremos <strong>sesga el análisis</strong> y oculta información valiosa de negocio.
+    </div>
+  </div>
+
+  <h3>4.1 — ¿Por qué los outliers son un problema?</h3>
+  <p>Los outliers distorsionan las estadísticas descriptivas. Veamos el impacto real en los datos del dataset:</p>
+
+  <div class="tabla-wrap">
+    <table>
+      <tr><th>Métrica</th><th>Con outliers</th><th>Sin outliers</th><th>Diferencia</th></tr>
+      <tr><td>Media de total_venta</td><td>$940.32</td><td>$689.76</td><td style="color:#DC2626;font-weight:700;">+36.3%</td></tr>
+      <tr><td>Mediana</td><td>$544.90</td><td>$461.76</td><td style="color:#DC2626;font-weight:700;">+18.0%</td></tr>
+      <tr><td>Desviación estándar</td><td>$1,624.33</td><td>$747.39</td><td style="color:#DC2626;font-weight:700;">+117.3%</td></tr>
+      <tr><td>Máximo</td><td>$83,850.68</td><td>$3,138.48</td><td style="color:#DC2626;font-weight:700;">+2,571.7%</td></tr>
+    </table>
+  </div>
+
+  <p>Los <strong>3,025 outliers</strong> (solo el 5.99% del dataset) están distorsionando completamente las estadísticas que usarías para tomar decisiones.</p>
+
+  <h3>4.2 — Métodos de detección</h3>
+
+  <h4>Método 1 — Regla IQR (Criterio de Tukey) ← el más usado</h4>
+  <p>No asume ninguna distribución en los datos. Funciona bien con casi cualquier dataset.</p>
+
+  <div class="formula">
+    <strong>Q1</strong> = Percentil 25 &nbsp;|&nbsp; <strong>Q3</strong> = Percentil 75 &nbsp;|&nbsp; <strong>IQR</strong> = Q3 − Q1<br><br>
+    <strong>Límite inferior</strong> = Q1 − 1.5 × IQR<br>
+    <strong>Límite superior</strong> = Q3 + 1.5 × IQR<br><br>
+    Todo valor fuera de estos límites → candidato a outlier
+  </div>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 ¿Qué es el IQR en palabras simples?</div>
+    <p>Si ordenas todos tus datos de menor a mayor, el <strong>Q1</strong> es el valor que queda en el 25% de la lista, y el <strong>Q3</strong> queda en el 75%. El <strong>IQR</strong> es la distancia entre ellos — la zona donde está "la mayoría normal" de tus datos. Cualquier cosa más allá de 1.5 veces esa distancia empieza a considerarse sospechosa.</p>
+  </div>
+
+  <h4>Método 2 — Z-Score (Puntaje Z)</h4>
+  <p>Mide cuántas desviaciones estándar se aleja un valor de la media. Asume distribución normal.</p>
+
+  <div class="formula">
+    <strong>Z = (valor − media) / desviación estándar</strong><br><br>
+    Si |Z| &gt; 3 → outlier (cubre el 99.7% de una distribución normal)
+  </div>
+
+  <div class="tabla-wrap">
+    <table>
+      <tr><th>Característica</th><th>IQR (Tukey)</th><th>Z-Score</th></tr>
+      <tr><td>¿Asume distribución normal?</td><td><span class="badge-verde">NO ← Más flexible</span></td><td><span class="badge-rojo">SÍ ← Limitante</span></td></tr>
+      <tr><td>¿Robusto ante los propios outliers?</td><td><span class="badge-verde">SÍ</span></td><td><span class="badge-rojo">NO</span></td></tr>
+      <tr><td>Cuándo usarlo</td><td>Análisis exploratorio general</td><td>Cuando los datos son normales</td></tr>
+      <tr><td>Factor estándar</td><td>1.5 (moderado), 3.0 (severo)</td><td>|Z| &gt; 3</td></tr>
+    </table>
+  </div>
+
+  <h3>4.3 — Código de detección de outliers</h3>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">detectar_outliers_iqr</span>(df, columnas, factor=<span class="c-num">1.5</span>):
+    <span class="c-str">"""
+    Detecta outliers usando la Regla IQR de Tukey.
+    factor=1.5 → outliers moderados (estándar)
+    factor=3.0 → solo outliers muy extremos
+    """</span>
+    resultados = []
+    <span class="c-kw">for</span> col <span class="c-kw">in</span> columnas:
+        serie   = df[col].dropna()
+        q1      = serie.quantile(<span class="c-num">0.25</span>)
+        q3      = serie.quantile(<span class="c-num">0.75</span>)
+        iqr     = q3 - q1
+        lim_inf = q1 - factor * iqr
+        lim_sup = q3 + factor * iqr
+
+        mask_out   = (df[col] < lim_inf) | (df[col] > lim_sup)
+        n_outliers = mask_out.sum()
+
+        resultados.append({
+            <span class="c-str">'columna'</span>     : col,
+            <span class="c-str">'Q1'</span>          : <span class="c-fn">round</span>(q1, <span class="c-num">2</span>),
+            <span class="c-str">'Q3'</span>          : <span class="c-fn">round</span>(q3, <span class="c-num">2</span>),
+            <span class="c-str">'lim_inferior'</span>: <span class="c-fn">round</span>(lim_inf, <span class="c-num">2</span>),
+            <span class="c-str">'lim_superior'</span>: <span class="c-fn">round</span>(lim_sup, <span class="c-num">2</span>),
+            <span class="c-str">'outliers'</span>    : n_outliers,
+            <span class="c-str">'pct_%'</span>       : <span class="c-fn">round</span>(n_outliers / <span class="c-fn">len</span>(df) * <span class="c-num">100</span>, <span class="c-num">3</span>),
+        })
+    <span class="c-kw">return</span> pd.DataFrame(resultados).sort_values(<span class="c-str">'outliers'</span>, ascending=<span class="c-kw">False</span>)
+
+cols_numericas = [<span class="c-str">'total_venta'</span>, <span class="c-str">'precio_unitario'</span>, <span class="c-str">'precio_final'</span>,
+                  <span class="c-str">'costo_total'</span>, <span class="c-str">'margen_usd'</span>, <span class="c-str">'cantidad'</span>, <span class="c-str">'descuento_pct'</span>]
+
+reporte_outliers = <span class="c-fn">detectar_outliers_iqr</span>(fv, cols_numericas)
+<span class="c-fn">print</span>(reporte_outliers.to_string(index=<span class="c-kw">False</span>))</pre>
+
+  <h3>4.4 — Tratamiento: Winsorización</h3>
+  <p>En nuestro dataset, los outliers de <code>total_venta</code> fueron errores de sistema (valores multiplicados por 8 a 15 veces). La decisión correcta es <strong>Winsorización</strong>: no eliminamos la fila, solo "recortamos" el valor al límite estadísticamente aceptable.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 ¿Qué es la Winsorización?</div>
+    <p>Imagina que tienes una regla para medir cosas, pero algunas medidas salen del borde de la regla. En vez de tirar esas medidas, las <strong>ajustas al borde máximo</strong> de la regla. La fila de datos sigue existiendo, solo que su valor extremo queda recortado al límite permitido.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="mini-card" style="border-left:4px solid #22C55E;">
+      <div class="icon">✂️</div>
+      <strong>Winsorización ← lo que hacemos</strong>
+      <p>Reemplazamos el valor extremo con el límite superior/inferior del IQR. La fila se conserva.</p>
+    </div>
+    <div class="mini-card" style="border-left:4px solid #EF4444;">
+      <div class="icon">🗑️</div>
+      <strong>Eliminación ← lo que NO hacemos (en este caso)</strong>
+      <p>Perdemos información transaccional completa. Introduce sesgo en los análisis de volumen.</p>
+    </div>
+  </div>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">winsorizat_iqr</span>(df, columna, factor=<span class="c-num">1.5</span>):
+    <span class="c-str">"""
+    Aplica Winsorización usando los límites IQR.
+    Reemplaza valores fuera de los límites con el límite correspondiente.
+    No elimina filas — preserva todas las transacciones.
+    """</span>
+    q1      = df[columna].quantile(<span class="c-num">0.25</span>)
+    q3      = df[columna].quantile(<span class="c-num">0.75</span>)
+    iqr     = q3 - q1
+    lim_inf = q1 - factor * iqr
+    lim_sup = q3 + factor * iqr
+
+    n_inf   = (df[columna] < lim_inf).sum()
+    n_sup   = (df[columna] > lim_sup).sum()
+
+    <span class="c-cmt"># .clip() es el corazón de la Winsorización:</span>
+    <span class="c-cmt"># lleva todos los valores al rango [lim_inf, lim_sup]</span>
+    df[columna] = df[columna].clip(lower=lim_inf, upper=lim_sup)
+
+    <span class="c-fn">print</span>(f<span class="c-str">"'{columna}': {n_inf} valores recortados (abajo), {n_sup} recortados (arriba)"</span>)
+    <span class="c-fn">print</span>(f<span class="c-str">"Nuevo máximo: ${df[columna].max():,.2f}"</span>)
+    <span class="c-kw">return</span> df
+
+fv = <span class="c-fn">winsorizat_iqr</span>(fv, <span class="c-str">'total_venta'</span>)</pre>
+</section>
+
+<!-- ─── PASO 5: DUPLICADOS ─── -->
+<section class="seccion" id="duplicados">
+  <div class="seccion-header">
+    <div class="seccion-num color-azul">5</div>
+    <div class="seccion-titulo">
+      <h2>Paso 5 — Detección y Eliminación de Duplicados <span class="tag-sesion tag-s3">Sesión 3</span></h2>
+      <p>Registros repetidos que inflan los conteos y promedios</p>
+    </div>
+  </div>
+
+  <h3>¿Qué es un duplicado?</h3>
+  <p>Un duplicado es una fila que aparece más de una vez en la tabla. Existen 3 tipos en datos transaccionales:</p>
+
+  <div class="grid-3">
+    <div class="mini-card">
+      <div class="icon">🔴</div>
+      <strong>Duplicado exacto</strong>
+      <p>Todas las columnas son idénticas. Claramente un error de sistema.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🟡</div>
+      <strong>Duplicado de clave</strong>
+      <p>El ID es el mismo pero algún campo varía ligeramente. Más difícil de detectar.</p>
+    </div>
+    <div class="mini-card">
+      <div class="icon">🟢</div>
+      <strong>Duplicado de negocio</strong>
+      <p>Diferentes IDs pero misma transacción real (ej: misma compra procesada dos veces).</p>
+    </div>
+  </div>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que tienes una lista de los alumnos de tu clase y el mismo nombre aparece dos veces. Si cuentas los alumnos usando esa lista, vas a creer que hay más de los que realmente hay. Los duplicados hacen lo mismo con las ventas: te hacen creer que vendiste más de lo que realmente vendiste.</p>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Primero estandarizar texto, luego buscar duplicados.</strong>
+      Los duplicados a veces tienen inconsistencias de texto que los hacen parecer distintos cuando son el mismo registro. "efectivo" ≠ "Efectivo" para el sistema, aunque para nosotros sean lo mismo.
+    </div>
+  </div>
+
+  <h3>5.1 — Detección de duplicados</h3>
+
+<pre><span class="c-cmt"># Paso 1: Duplicados exactos (todas las columnas iguales)</span>
+dup_exactos = fv.duplicated().sum()
+<span class="c-fn">print</span>(f<span class="c-str">"Duplicados exactos: {dup_exactos:,}"</span>)
+
+<span class="c-cmt"># Paso 2: Duplicados solo por clave primaria (id_venta)</span>
+<span class="c-cmt"># Mismo ID pero quizás algún campo varía</span>
+dup_id = fv.duplicated(subset=[<span class="c-str">'id_venta'</span>]).sum()
+<span class="c-fn">print</span>(f<span class="c-str">"Duplicados por id_venta: {dup_id:,}"</span>)
+
+<span class="c-cmt"># Paso 3: Ver los ejemplos de duplicados para entender el problema</span>
+mask_dup = fv.duplicated(keep=<span class="c-kw">False</span>)  <span class="c-cmt"># True en TODOS los duplicados</span>
+<span class="c-fn">print</span>(
+    fv[mask_dup]
+    .sort_values(<span class="c-str">'id_venta'</span>)
+    .head(<span class="c-num">6</span>)
+    [[<span class="c-str">'id_venta'</span>, <span class="c-str">'id_cliente'</span>, <span class="c-str">'total_venta'</span>, <span class="c-str">'canal'</span>]]
+    .to_string(index=<span class="c-kw">False</span>)
+)</pre>
+
+  <h3>5.2 — Eliminación de duplicados</h3>
+
+<pre>n_antes = <span class="c-fn">len</span>(fv)
+
+<span class="c-cmt"># keep='first' → conservamos la primera ocurrencia, eliminamos las siguientes</span>
+<span class="c-cmt"># reset_index(drop=True) → renumeramos el índice desde 0</span>
+fv = fv.drop_duplicates(keep=<span class="c-str">'first'</span>).reset_index(drop=<span class="c-kw">True</span>)
+
+n_despues  = <span class="c-fn">len</span>(fv)
+eliminadas = n_antes - n_despues
+
+<span class="c-fn">print</span>(f<span class="c-str">"Filas antes    : {n_antes:,}"</span>)
+<span class="c-fn">print</span>(f<span class="c-str">"Filas después  : {n_despues:,}"</span>)
+<span class="c-fn">print</span>(f<span class="c-str">"Filas eliminadas: {eliminadas:,} ({eliminadas/n_antes*100:.2f}%)"</span>)
+
+<span class="c-cmt"># Verificar que no quedan duplicados</span>
+<span class="c-kw">assert</span> fv.duplicated().sum() == <span class="c-num">0</span>, <span class="c-str">"⚠️ Aún quedan duplicados!"</span>
+<span class="c-fn">print</span>(<span class="c-str">"✅ Dataset libre de duplicados."</span>)</pre>
+</section>
+
+<!-- ─── PASO 6: TEXTO ─── -->
+<section class="seccion" id="texto">
+  <div class="seccion-header">
+    <div class="seccion-num color-violeta">6</div>
+    <div class="seccion-titulo">
+      <h2>Paso 6 — Estandarización Profunda de Texto <span class="tag-sesion tag-s3">Sesión 3</span></h2>
+      <p>Unificar valores que representan lo mismo pero están escritos diferente</p>
+    </div>
+  </div>
+
+  <p>En la Sesión 2 corregimos capitalización superficialmente (mayúsculas/minúsculas). Ahora atacamos las <strong>inconsistencias semánticas</strong>: valores que significan lo mismo pero están escritos diferente.</p>
+
+  <div class="explica-nino">
+    <div class="etiqueta">🧒 Explicado como para un niño de 8 años</div>
+    <p>Imagina que tienes una lista de métodos de pago y ves: "T.Debito", "Tarjeta Debito", "Tarjeta Débito". Para nosotros los humanos, los tres significan lo mismo. Pero para la computadora, son <strong>3 cosas completamente diferentes</strong>. Si haces un gráfico de pagos, aparecerán como 3 barras distintas en vez de una sola. Tenemos que decirle a la computadora que todas son la misma cosa.</p>
+  </div>
+
+  <h3>6.1 — Estandarización con mapas de equivalencias</h3>
+
+<pre><span class="c-kw">def</span> <span class="c-fn">estandarizar_valores</span>(df, columna, mapa_reemplazos):
+    <span class="c-str">"""
+    Reemplaza valores inconsistentes según un mapa de equivalencias.
+    El mapa lo define el analista con conocimiento de negocio.
+    """</span>
+    cambios = df[columna].map(
+        <span class="c-kw">lambda</span> x: mapa_reemplazos.get(x, x) <span class="c-kw">if</span> pd.notna(x) <span class="c-kw">else</span> x
+    )
+    n_cambios = (df[columna] != cambios).sum()
+    df[columna] = cambios
+    <span class="c-fn">print</span>(f<span class="c-str">"  '{columna}': {n_cambios:,} registros modificados"</span>)
+    <span class="c-kw">return</span> df
+
+<span class="c-cmt"># ── Mapa de estandarización para 'canal' ─────────────────────</span>
+mapa_canal = {
+    <span class="c-str">'Ecommerce'</span>    : <span class="c-str">'E-Commerce'</span>,
+    <span class="c-str">'App Movil'</span>    : <span class="c-str">'App Móvil'</span>,
+    <span class="c-str">'Telefonico'</span>   : <span class="c-str">'Telefónico'</span>,
+    <span class="c-str">'Tienda Fisica'</span>: <span class="c-str">'Tienda Física'</span>,
+}
+
+<span class="c-cmt"># ── Mapa de estandarización para 'metodo_pago' ───────────────</span>
+mapa_pago = {
+    <span class="c-str">'T.Debito'</span>       : <span class="c-str">'Tarjeta Débito'</span>,
+    <span class="c-str">'Tarjeta Debito'</span> : <span class="c-str">'Tarjeta Débito'</span>,
+    <span class="c-str">'Tarjeta Credito'</span>: <span class="c-str">'Tarjeta Crédito'</span>,
+    <span class="c-str">'Qr/Billetera'</span>   : <span class="c-str">'QR/Billetera'</span>,
+}
+
+fv = <span class="c-fn">estandarizar_valores</span>(fv, <span class="c-str">'canal'</span>,       mapa_canal)
+fv = <span class="c-fn">estandarizar_valores</span>(fv, <span class="c-str">'metodo_pago'</span>, mapa_pago)</pre>
+
+  <h3>6.2 — Violación de dominio</h3>
+  <p>El valor existe, no es nulo, no es duplicado, pero está <strong>fuera del conjunto de valores válidos</strong> para esa columna.</p>
+
+  <div class="callout warning">
+    <div class="callout-icon">🚨</div>
+    <div class="callout-body">
+      <strong>Ejemplo:</strong> La columna <code>devolucion</code> solo puede tener valores 0 o 1 (sí devolvió / no devolvió). Si encuentras un valor "2" o "-1", eso es una violación de dominio. El valor existe, no es nulo, pero es imposible en el contexto del negocio.
+    </div>
+  </div>
+
+<pre><span class="c-cmt"># Verificar violaciones de dominio en 'devolucion' (solo puede ser 0 o 1)</span>
+valores_validos_dev = {<span class="c-num">0</span>, <span class="c-num">1</span>}
+violaciones = fv[~fv[<span class="c-str">'devolucion'</span>].isin(valores_validos_dev)]
+
+<span class="c-kw">if</span> <span class="c-fn">len</span>(violaciones) > <span class="c-num">0</span>:
+    <span class="c-fn">print</span>(f<span class="c-str">"⚠️  {len(violaciones)} violaciones de dominio en 'devolucion'"</span>)
+    <span class="c-fn">print</span>(violaciones[<span class="c-str">'devolucion'</span>].value_counts())
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"✅ Sin violaciones de dominio en 'devolucion'"</span>)</pre>
+</section>
+
+<!-- ─── RESUMEN FINAL ─── -->
+<section class="seccion" id="resumen">
+  <div class="seccion-header">
+    <div class="seccion-num color-verde">✅</div>
+    <div class="seccion-titulo">
+      <h2>Resumen — El ETL completo en orden</h2>
+      <p>Todos los pasos de las Sesiones 2 y 3</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#0EA5E9">0</div>
+    <div class="paso-body">
+      <strong>Preparación y carga de datos</strong>
+      <p>Montar Google Drive, importar librerías, leer el Excel original en todas sus hojas, y crear una copia de trabajo (<code>fv = fact_ventas.copy()</code>). La <strong>Regla de Oro</strong>: el original nunca se toca.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#2D3FE7">1</div>
+    <div class="paso-body">
+      <strong>Auditoría inicial</strong>
+      <p>Diagnosticar el estado actual de los datos: tipos, nulos, duplicados, estadísticas numéricas, distribución de categóricas, rangos de negocio. Sin cambiar nada aún.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#534AB7">2</div>
+    <div class="paso-body">
+      <strong>Corrección de tipos de datos y fechas</strong>
+      <p>Convertir columnas a sus tipos correctos (int64, float64, datetime64, category). Estandarizar capitalización de texto (strip + title).</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#1D9E75">3</div>
+    <div class="paso-body">
+      <strong>Tratamiento de valores nulos</strong>
+      <p>Identificar mecanismo (MCAR/MAR/MNAR) e imputar: moda para categóricas, mediana para numéricas. Verificar que no quedan nulos. Guardar checkpoint.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#D85A30">4</div>
+    <div class="paso-body">
+      <strong>Detección y tratamiento de outliers</strong>
+      <p>Aplicar Regla IQR para detectar valores atípicos. Determinar si son errores o eventos reales. Aplicar Winsorización para recortar sin eliminar filas.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#2D3FE7">5</div>
+    <div class="paso-body">
+      <strong>Detección y eliminación de duplicados</strong>
+      <p>Buscar duplicados exactos y por clave primaria. Eliminar con <code>drop_duplicates(keep='first')</code>. Verificar que no quedan.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso-num" style="background:#534AB7">6</div>
+    <div class="paso-body">
+      <strong>Estandarización profunda de texto y violaciones de dominio</strong>
+      <p>Unificar sinónimos y variaciones mediante mapas de equivalencias. Detectar y corregir violaciones de dominio (valores que no pertenecen al conjunto válido).</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <div class="callout success">
+    <div class="callout-icon">🎯</div>
+    <div class="callout-body">
+      <strong>Resultado final:</strong> Un dataset limpio, sin nulos, sin duplicados, con tipos correctos, sin outliers extremos y con texto unificado. Este dataset limpio es el que se carga al Data Warehouse o se usa para construir dashboards y modelos de machine learning.
+    </div>
+  </div>
+
+  <h3>Archivos generados durante el proceso</h3>
+  <div class="tabla-wrap">
+    <table>
+      <tr><th>Archivo</th><th>Cuándo se crea</th><th>Qué contiene</th></tr>
+      <tr><td><code>BIZDATA_dataset_maestro_retail.xlsx</code></td><td>Siempre existió</td><td>El original. Nunca se modifica.</td></tr>
+      <tr><td><code>fv_checkpoint_nulos.xlsx</code></td><td>Fin de Sesión 2</td><td>Dataset después de tratar nulos y corregir tipos.</td></tr>
+      <tr><td><code>fv_etl_final.xlsx</code></td><td>Fin de Sesión 3</td><td>Dataset completamente limpio. Listo para análisis.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ─── BLOQUE FINAL ─── -->
+<div class="resumen-final">
+  <h2>🚀 ¡Tú puedes hacerlo!</h2>
+  <p>El ETL parece complicado al principio, pero en realidad es un proceso lógico y ordenado. Sigue los pasos en orden, nunca toques el original, y documenta cada decisión que tomes sobre los datos.</p>
+  <div class="flujo-etl">
+    <div class="flujo-paso">📤 Extraer</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">🔍 Auditar</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">🔢 Tipos</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">🕳️ Nulos</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">🚀 Outliers</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">📋 Duplicados</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">🔤 Texto</div>
+    <div class="flujo-flecha">→</div>
+    <div class="flujo-paso">📥 Dataset Limpio</div>
+  </div>
+  <p style="margin-top:28px; font-size:0.9rem;">Generado desde Sesión 2 y Sesión 3 — Inteligencia de Negocios · 2025</p>
+</div>
+
+</div><!-- /contenido -->
+</body>
+</html>
