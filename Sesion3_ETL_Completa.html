@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ETL Sesión 3 — Guía Completa</title>
+<style>
+:root{
+  --azul:#2D3FE7; --violeta:#534AB7; --verde:#1D9E75;
+  --rojo:#D85A30; --amarillo:#F59E0B; --gris:#F5F6FA;
+  --borde:#E2E8F0; --texto:#1A1A2E;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:var(--texto);line-height:1.75;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1A1A2E,#534AB7);color:#fff;text-align:center;padding:70px 24px 50px;}
+.hero .badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:5px 18px;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;}
+.hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;line-height:1.2;margin-bottom:14px;}
+.hero h1 span{color:#A5B4FC;}
+.hero p{font-size:1.1rem;opacity:.85;max-width:640px;margin:0 auto;}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid var(--borde);padding:12px 20px;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;position:sticky;top:0;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.nav a{text-decoration:none;color:var(--violeta);font-size:.78rem;font-weight:700;padding:4px 11px;border-radius:6px;border:1px solid var(--borde);transition:all .15s;}
+.nav a:hover{background:var(--azul);color:#fff;border-color:var(--azul);}
+
+/* LAYOUT */
+.wrap{max-width:920px;margin:0 auto;padding:36px 18px 80px;}
+
+/* SECCIÓN */
+.sec{background:#fff;border-radius:14px;padding:34px;margin-bottom:28px;border:1px solid var(--borde);box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.sec-hdr{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:2px solid var(--gris);}
+.num{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;flex-shrink:0;color:#fff;}
+.b-azul{background:var(--azul);} .b-v{background:var(--violeta);}
+.b-verde{background:var(--verde);} .b-rojo{background:var(--rojo);}
+.b-am{background:var(--amarillo);} .b-gr{background:#64748B;}
+.b-cy{background:#0EA5E9;} .b-pi{background:#EC4899;}
+
+.sec-hdr-txt h2{font-size:1.4rem;font-weight:700;}
+.sec-hdr-txt p{font-size:.88rem;color:#64748B;margin-top:2px;}
+
+h3{font-size:1.1rem;font-weight:700;margin:22px 0 9px;}
+h4{font-size:.98rem;font-weight:700;margin:16px 0 7px;color:var(--violeta);}
+p{margin-bottom:12px;}
+ul,ol{margin-left:20px;margin-bottom:12px;color:#475569;}
+li{margin-bottom:5px;}
+
+/* CALLOUTS */
+.box{border-radius:10px;padding:15px 18px;margin:14px 0;display:flex;gap:11px;align-items:flex-start;}
+.box-icon{font-size:1.3rem;flex-shrink:0;margin-top:2px;}
+.box-body{flex:1;}
+.box-body strong{display:block;margin-bottom:3px;}
+.info{background:#EFF6FF;border-left:4px solid #3B82F6;}
+.warn{background:#FFFBEB;border-left:4px solid #F59E0B;}
+.danger{background:#FEF2F2;border-left:4px solid #EF4444;}
+.ok{background:#F0FDF4;border-left:4px solid #22C55E;}
+.tip{background:#F5F3FF;border-left:4px solid #8B5CF6;}
+
+/* NIÑO */
+.nino{background:linear-gradient(135deg,#FFF9E6,#FFF3CC);border:2px dashed #F59E0B;border-radius:12px;padding:16px 20px;margin:14px 0;}
+.nino .et{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#92400E;margin-bottom:5px;}
+.nino p{color:#78350F;margin:0;}
+
+/* CÓDIGO */
+pre{background:#1E1E2E;color:#CDD6F4;border-radius:10px;padding:18px;overflow-x:auto;font-size:.83rem;font-family:'Consolas','Courier New',monospace;margin:12px 0;line-height:1.65;}
+.kw{color:#CBA6F7;} .fn{color:#89DCEB;} .st{color:#A6E3A1;}
+.nm{color:#FAB387;} .cm{color:#6C7086;} .op{color:#89B4FA;}
+.va{color:#F38BA8;}
+
+/* EXPLICACIÓN DE CÓDIGO */
+.explain-code{background:#F8FAFF;border:1px solid #DBEAFE;border-radius:8px;padding:14px 18px;margin:6px 0 14px;font-size:.88rem;}
+.explain-code .linea{margin-bottom:8px;display:flex;gap:10px;}
+.explain-code .linea .cod{font-family:monospace;background:#EEF2FF;padding:1px 7px;border-radius:4px;white-space:nowrap;font-size:.82rem;color:#4338CA;}
+.explain-code .linea .desc{color:#374151;flex:1;}
+
+/* OUTPUT real */
+.output{background:#0A0A0A;color:#A6E3A1;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:.81rem;margin:8px 0 14px;border-left:4px solid var(--verde);overflow-x:auto;white-space:pre;}
+
+/* TABLA */
+.tw{overflow-x:auto;margin:14px 0;}
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+th{background:var(--gris);font-weight:700;padding:9px 13px;text-align:left;border-bottom:2px solid var(--borde);}
+td{padding:8px 13px;border-bottom:1px solid var(--borde);}
+tr:hover td{background:#F8FAFF;}
+.bg{background:#D1FAE5;color:#065F46;border-radius:5px;padding:1px 7px;font-size:.76rem;font-weight:700;}
+.br{background:#FEE2E2;color:#991B1B;border-radius:5px;padding:1px 7px;font-size:.76rem;font-weight:700;}
+.ba{background:#DBEAFE;color:#1E40AF;border-radius:5px;padding:1px 7px;font-size:.76rem;font-weight:700;}
+.by{background:#FEF3C7;color:#92400E;border-radius:5px;padding:1px 7px;font-size:.76rem;font-weight:700;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0;}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr;}}
+.card{border:1px solid var(--borde);border-radius:10px;padding:15px;background:var(--gris);}
+.card .ic{font-size:1.6rem;margin-bottom:7px;}
+.card strong{display:block;margin-bottom:4px;}
+.card p{font-size:.84rem;color:#475569;margin:0;}
+
+/* FORMULA */
+.fml{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;text-align:center;margin:14px 0;font-family:Georgia,serif;font-size:1rem;}
+
+/* SEP */
+hr{border:none;border-top:2px solid var(--gris);margin:22px 0;}
+
+/* FLUJO FINAL */
+.flujo{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:20px 0;}
+.fp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 14px;font-size:.85rem;font-weight:600;}
+.fa{font-size:1.3rem;opacity:.5;}
+
+/* CIERRE */
+.cierre{background:linear-gradient(135deg,#1A1A2E,#534AB7);color:#fff;border-radius:14px;padding:34px;text-align:center;margin-top:36px;}
+.cierre h2{font-size:1.7rem;margin-bottom:12px;}
+.cierre p{opacity:.85;max-width:580px;margin:0 auto 20px;}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">Sesión 3 · Segunda parte del ETL</div>
+  <h1>ETL Completo — <span>Sesión 3</span></h1>
+  <p>Todo el notebook explicado paso a paso: cada sección, cada función, cada línea de código — con palabras simples.</p>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#carga">Carga</a>
+  <a href="#s4">4 · Outliers</a>
+  <a href="#s42">4.2 · Métodos</a>
+  <a href="#s43">4.3 · Impacto</a>
+  <a href="#s5">5 · Detección</a>
+  <a href="#s52">5.2 · Winsorización</a>
+  <a href="#s53">5.3 · Verificación</a>
+  <a href="#s6">6 · Texto</a>
+  <a href="#s62">6.2 · Duplicados</a>
+  <a href="#s63">6.3 · Dominio</a>
+  <a href="#s7">7 · Integridad</a>
+  <a href="#s8">8 · Dataset Final</a>
+  <a href="#s9">9 · Cierre</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════════════════════
+     CARGA DEL CHECKPOINT
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="carga">
+  <div class="sec-hdr">
+    <div class="num b-cy">📂</div>
+    <div class="sec-hdr-txt">
+      <h2>Carga del avance de la Sesión 2</h2>
+      <p>El punto de partida: retomamos donde dejamos la sesión anterior</p>
+    </div>
+  </div>
+
+  <p>La Sesión 3 <strong>no empieza desde cero</strong>. Carga el archivo que guardaste al final de la Sesión 2: ya viene sin nulos, con tipos de datos corregidos y texto con capitalización uniforme. Desde ahí continuamos.</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Es como cuando pausas un videojuego y lo guardas. La próxima vez que juegas, cargas ese guardado y sigues exactamente desde donde estabas — no tienes que volver al principio.</p>
+  </div>
+
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy  <span class="kw">as</span> np
+<span class="kw">import</span> os
+<span class="kw">import</span> plotly.express <span class="kw">as</span> px    <span class="cm"># para gráficos interactivos</span>
+<span class="kw">import</span> plotly.graph_objects <span class="kw">as</span> go  <span class="cm"># para gráficos personalizados</span>
+
+RUTA_EXCEL = <span class="st">'BIZDATA_dataset_maestro_retail.xlsx'</span>
+
+<span class="cm"># ── Cargar el checkpoint guardado en la Sesión 2 ─────────────</span>
+fv = pd.read_excel(<span class="st">'fv_checkpoint_nulos.xlsx'</span>)
+
+<span class="cm"># ── Recargar las dimensiones desde el Excel original ─────────</span>
+dim_clientes    = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_clientes'</span>)
+dim_productos   = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_productos'</span>)
+dim_sucursales  = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_sucursales'</span>)
+dim_tiempo      = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_tiempo'</span>)
+dim_proveedores = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_proveedores'</span>)
+
+<span class="fn">print</span>(f<span class="st">"✅ Dataset cargado desde Sesión 2"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas: {len(fv):,} | Nulos: {fv.isnull().sum().sum()}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv = pd.read_excel('fv_checkpoint_nulos.xlsx')</span><span class="desc">Lee el archivo Excel que guardaste en la Sesión 2. Es tu punto de partida limpio: ya no tiene nulos.</span></div>
+    <div class="linea"><span class="cod">import plotly.express as px</span><span class="desc">Plotly es una librería para hacer gráficos interactivos (los que se pueden hacer zoom y hover). La usamos para visualizar outliers.</span></div>
+    <div class="linea"><span class="cod">fv.isnull().sum().sum()</span><span class="desc">Cuenta el total de nulos en todo el DataFrame. El primer <code>.sum()</code> cuenta por columna, el segundo suma todas las columnas. Debería dar 0.</span></div>
+  </div>
+
+  <div class="output">✅ Dataset cargado desde Sesión 2
+   Filas: 50,500 | Nulos: 0</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 4 — OUTLIERS
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s4">
+  <div class="sec-hdr">
+    <div class="num b-rojo">4</div>
+    <div class="sec-hdr-txt">
+      <h2>4. Outliers / Valores Atípicos</h2>
+      <p>Qué son, por qué importan y cómo identificarlos</p>
+    </div>
+  </div>
+
+  <h3>4.1 — ¿Qué es un outlier?</h3>
+  <p>Un <strong>outlier</strong> (valor atípico) es una observación que se aleja significativamente del resto de los datos en una distribución. Antes de actuar, hay que distinguir qué tipo es:</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que 30 niños del salón tienen entre 8 y 10 años. Si de repente uno tiene 35 años, eso es un outlier: un número que "no pega" con el resto. Pero ojo: puede ser un error (alguien escribió mal), o puede ser real (hay un adulto en el salón). ¡Tienes que averiguar cuál es antes de decidir qué hacer!</p>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="border-left:4px solid #EF4444;">
+      <div class="ic">🐛</div>
+      <strong>Tipo 1 — Outlier por Error</strong>
+      <p>Es un error de captura, sistema o proceso. El dato está mal desde el origen.</p>
+      <p style="margin-top:8px;font-size:.82rem;color:#DC2626;"><strong>Ejemplo del dataset:</strong> Una venta de $83,850.68 que debería ser ~$838. El sistema la multiplicó por 100 accidentalmente.</p>
+      <p style="font-size:.82rem;margin-top:4px;"><strong>Decisión:</strong> Corregir o recortar (Winsorización).</p>
+    </div>
+    <div class="card" style="border-left:4px solid #22C55E;">
+      <div class="ic">🦄</div>
+      <strong>Tipo 2 — Outlier Real (evento genuino)</strong>
+      <p>El dato es correcto, solo que ese evento fue inusualmente extremo.</p>
+      <p style="margin-top:8px;font-size:.82rem;color:#059669;"><strong>Ejemplo:</strong> Una empresa compró 200 unidades en una sola compra corporativa. Es raro, pero real.</p>
+      <p style="font-size:.82rem;margin-top:4px;"><strong>Decisión:</strong> Conservar. Eliminarlo sesga el análisis.</p>
+    </div>
+  </div>
+
+  <div class="box danger">
+    <div class="box-icon">🚨</div>
+    <div class="box-body">
+      <strong>Regla crítica del notebook:</strong> "Nunca elimines un outlier sin primero determinar si es un error o un evento real. Eliminar eventos reales extremos sesga el análisis y oculta información valiosa de negocio."
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     4.2 — MÉTODOS DE DETECCIÓN
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s42">
+  <div class="sec-hdr">
+    <div class="num b-rojo">4.2</div>
+    <div class="sec-hdr-txt">
+      <h2>Métodos de detección de outliers</h2>
+      <p>IQR de Tukey y Z-Score — los dos métodos del curso</p>
+    </div>
+  </div>
+
+  <h3>Método 1 — Regla IQR (Criterio de Tukey) ← el que usamos</h3>
+  <p>Desarrollado por John Tukey en 1977. Es el más usado en análisis exploratorio porque <strong>no asume ninguna distribución</strong> en los datos — funciona con casi cualquier dataset.</p>
+
+  <div class="nino">
+    <div class="et">🧒 ¿Qué es el IQR en palabras simples?</div>
+    <p>Ordena todos tus datos de menor a mayor. El <strong>Q1</strong> es el valor en el puesto 25% de la lista, el <strong>Q3</strong> está en el puesto 75%. El <strong>IQR</strong> es la distancia entre ellos — básicamente la zona donde vive "la mitad normal" de tus datos. Si un valor está más allá de 1.5 veces esa distancia, se considera sospechoso.</p>
+  </div>
+
+  <div class="fml">
+    <strong>Q1</strong> = Percentil 25 &nbsp;|&nbsp; <strong>Q3</strong> = Percentil 75 &nbsp;|&nbsp; <strong>IQR</strong> = Q3 − Q1
+    <br><br>
+    Límite inferior = Q1 − <strong>1.5</strong> × IQR<br>
+    Límite superior = Q3 + <strong>1.5</strong> × IQR<br><br>
+    <em>Todo valor fuera de estos límites → candidato a outlier</em>
+  </div>
+
+  <div class="box info">
+    <div class="box-icon">💡</div>
+    <div class="box-body">
+      <strong>¿Por qué 1.5 y no otro número?</strong> Tukey demostró matemáticamente que con ese factor, en una distribución normal, solo el <strong>0.7%</strong> de los datos quedan fuera — es decir, son genuinamente extremos. Algunos analistas usan <strong>3.0</strong> para detectar solo outliers muy severos (extremos extremos).
+    </div>
+  </div>
+
+  <h3>Método 2 — Puntaje Z (Z-Score)</h3>
+  <p>Mide cuántas desviaciones estándar se aleja un valor de la media. Asume que los datos siguen una distribución normal (campana de Gauss).</p>
+
+  <div class="nino">
+    <div class="et">🧒 ¿Qué mide el Z-Score?</div>
+    <p>Imagina que el promedio de estatura de tu clase es 1.30m. El Z-Score te dice: "este niño está a <em>3 estaturas promedio</em> de distancia del promedio". Si esa distancia es mayor a 3, el valor es muy raro.</p>
+  </div>
+
+  <div class="fml">
+    <strong>Z = (valor − media) / desviación estándar</strong><br><br>
+    Si |Z| &gt; 3 → outlier (el 99.7% de los datos normales caben dentro de |Z| ≤ 3)
+  </div>
+
+  <div class="tw">
+    <table>
+      <tr><th>Característica</th><th>IQR (Tukey) ← usamos este</th><th>Z-Score</th></tr>
+      <tr><td>¿Asume distribución normal?</td><td><span class="bg">NO — más flexible</span></td><td><span class="br">SÍ — limitante</span></td></tr>
+      <tr><td>¿Robusto ante sus propios outliers?</td><td><span class="bg">SÍ</span></td><td><span class="br">NO — los outliers afectan la media</span></td></tr>
+      <tr><td>Mejor para</td><td>Exploración general</td><td>Datos que sí son normales</td></tr>
+      <tr><td>Factor estándar</td><td>1.5 (moderado), 3.0 (severo)</td><td>|Z| &gt; 3</td></tr>
+      <tr><td>Cuándo usar</td><td>La mayoría de los casos</td><td>Cuando ya confirmaste normalidad</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     4.3 — IMPACTO
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s43">
+  <div class="sec-hdr">
+    <div class="num b-rojo">4.3</div>
+    <div class="sec-hdr-txt">
+      <h2>Impacto de los outliers en estadísticas descriptivas</h2>
+      <p>Los números reales del dataset demuestran por qué hay que tratarlos</p>
+    </div>
+  </div>
+
+  <p>Esta celda compara las estadísticas <em>con</em> y <em>sin</em> outliers para demostrar cuánto distorsionan los KPIs que un gerente vería en su dashboard.</p>
+
+<pre><span class="cm"># ── Demostración del impacto ────────────────────────────────</span>
+col = <span class="st">'total_venta'</span>
+
+<span class="cm"># Paso 1: calcular los límites IQR</span>
+q1      = fv[col].quantile(<span class="nm">0.25</span>)   <span class="cm"># percentil 25</span>
+q3      = fv[col].quantile(<span class="nm">0.75</span>)   <span class="cm"># percentil 75</span>
+iqr     = q3 - q1                  <span class="cm"># distancia intercuartílica</span>
+lim_sup = q3 + <span class="nm">1.5</span> * iqr           <span class="cm"># límite superior de Tukey</span>
+
+<span class="cm"># Paso 2: crear dos versiones — con y sin outliers</span>
+sin_outliers = fv[fv[col] <= lim_sup][col]   <span class="cm"># solo filas dentro del límite</span>
+con_outliers = fv[col]                        <span class="cm"># todas las filas</span>
+
+<span class="cm"># Paso 3: comparar métricas</span>
+metricas = {
+    <span class="st">'Media'</span>    : (con_outliers.mean(),   sin_outliers.mean()),
+    <span class="st">'Mediana'</span>  : (con_outliers.median(), sin_outliers.median()),
+    <span class="st">'Desv. est'</span>: (con_outliers.std(),    sin_outliers.std()),
+    <span class="st">'Máximo'</span>   : (con_outliers.max(),    sin_outliers.max()),
+}
+
+<span class="kw">for</span> nombre, (con, sin) <span class="kw">in</span> metricas.items():
+    dif_pct = abs(con - sin) / sin * <span class="nm">100</span>
+    <span class="fn">print</span>(f<span class="st">"  {nombre:<18} {con:>15,.2f} {sin:>15,.2f} {dif_pct:>13.1f}%"</span>)
+
+<span class="fn">print</span>(f<span class="st">"\n  Outliers detectados: {(fv[col] > lim_sup).sum():,} filas"</span>)
+<span class="fn">print</span>(f<span class="st">"  Representa el {(fv[col] > lim_sup).sum()/len(fv)*100:.2f}% del dataset"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv[col].quantile(0.25)</span><span class="desc">Calcula el percentil 25: el valor tal que el 25% de los datos están por debajo de él. Python hace el cálculo automáticamente.</span></div>
+    <div class="linea"><span class="cod">fv[fv[col] &lt;= lim_sup][col]</span><span class="desc">Filtra el DataFrame para quedarse solo con las filas donde total_venta no supera el límite superior. Así quita los outliers temporalmente para comparar.</span></div>
+    <div class="linea"><span class="cod">abs(con - sin) / sin * 100</span><span class="desc">Calcula cuánto % cambia la métrica cuando agregas los outliers. Ej: si la media con outliers es $940 y sin outliers es $689, la diferencia es 36.3%.</span></div>
+    <div class="linea"><span class="cod">(fv[col] &gt; lim_sup).sum()</span><span class="desc">Cuenta cuántas filas tienen total_venta por encima del límite. El resultado es True/False por fila, y .sum() cuenta los True.</span></div>
+  </div>
+
+  <div class="output">IMPACTO DE OUTLIERS EN ESTADÍSTICAS DE 'total_venta'
+
+Métrica                 Con outliers    Sin outliers   Diferencia %
+────────────────────────────────────────────────────────────────────
+  Media                       940.32          689.76          36.3%
+  Mediana                     544.90          461.76          18.0%
+  Desv. est                 1,624.33          747.39         117.3%
+  Máximo                   83,850.68        3,138.48        2571.7%
+
+  Outliers detectados: 3,025 filas
+  Representa el 5.99% del dataset</div>
+
+  <div class="box warn">
+    <div class="box-icon">⚠️</div>
+    <div class="box-body">
+      <strong>¿Ves lo que pasa?</strong> Solo el 5.99% de las filas son outliers, pero hacen que:
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li>La <strong>media</strong> suba un 36.3% — el KPI de "venta promedio" estaría inflado</li>
+        <li>La <strong>desviación estándar</strong> suba 117.3% — el reporte de variabilidad estaría completamente distorsionado</li>
+        <li>El <strong>máximo</strong> sea 2,571% mayor de lo real — imposible de detectar visualmente en un gráfico</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 5 — DETECCIÓN SISTEMÁTICA
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s5">
+  <div class="sec-hdr">
+    <div class="num b-rojo">5</div>
+    <div class="sec-hdr-txt">
+      <h2>5. Detección y Tratamiento de Outliers</h2>
+      <p>5.1 — Detectar en todas las columnas numéricas</p>
+    </div>
+  </div>
+
+  <p>Ahora aplicamos el método IQR a <strong>todas</strong> las columnas numéricas del dataset de manera sistemática, no solo a <code>total_venta</code>.</p>
+
+<pre><span class="kw">def</span> <span class="fn">detectar_outliers_iqr</span>(df, columnas, factor=<span class="nm">1.5</span>):
+    <span class="st">"""
+    Detecta outliers usando la Regla IQR de Tukey.
+    Retorna un DataFrame con el resumen por columna.
+
+    factor=1.5 → outliers moderados (Tukey estándar)
+    factor=3.0 → outliers extremos (solo casos severos)
+    """</span>
+    resultados = []
+
+    <span class="kw">for</span> col <span class="kw">in</span> columnas:
+        serie   = df[col].dropna()           <span class="cm"># ignora nulos para el cálculo</span>
+        q1      = serie.quantile(<span class="nm">0.25</span>)
+        q3      = serie.quantile(<span class="nm">0.75</span>)
+        iqr     = q3 - q1
+        lim_inf = q1 - factor * iqr          <span class="cm"># límite por abajo</span>
+        lim_sup = q3 + factor * iqr          <span class="cm"># límite por arriba</span>
+
+        <span class="cm"># mask_out es True para cada fila que está fuera de los límites</span>
+        mask_out   = (df[col] < lim_inf) | (df[col] > lim_sup)
+        n_outliers = mask_out.sum()          <span class="cm"># cuántos outliers hay</span>
+
+        resultados.append({
+            <span class="st">'columna'</span>     : col,
+            <span class="st">'Q1'</span>          : <span class="fn">round</span>(q1, <span class="nm">2</span>),
+            <span class="st">'Q3'</span>          : <span class="fn">round</span>(q3, <span class="nm">2</span>),
+            <span class="st">'IQR'</span>         : <span class="fn">round</span>(iqr, <span class="nm">2</span>),
+            <span class="st">'lim_inferior'</span>: <span class="fn">round</span>(lim_inf, <span class="nm">2</span>),
+            <span class="st">'lim_superior'</span>: <span class="fn">round</span>(lim_sup, <span class="nm">2</span>),
+            <span class="st">'outliers'</span>    : n_outliers,
+            <span class="st">'pct_%'</span>       : <span class="fn">round</span>(n_outliers / <span class="fn">len</span>(df) * <span class="nm">100</span>, <span class="nm">3</span>),
+            <span class="st">'max_valor'</span>   : <span class="fn">round</span>(df[col].max(), <span class="nm">2</span>),
+        })
+
+    <span class="kw">return</span> pd.DataFrame(resultados).sort_values(<span class="st">'outliers'</span>, ascending=<span class="kw">False</span>)
+
+cols_numericas = [<span class="st">'total_venta'</span>, <span class="st">'precio_unitario'</span>, <span class="st">'precio_final'</span>,
+                  <span class="st">'costo_total'</span>, <span class="st">'margen_usd'</span>, <span class="st">'cantidad'</span>, <span class="st">'descuento_pct'</span>]
+
+reporte_outliers = <span class="fn">detectar_outliers_iqr</span>(fv, cols_numericas)
+<span class="fn">print</span>(<span class="st">"DETECCIÓN DE OUTLIERS — Regla IQR (factor=1.5)\n"</span>)
+<span class="fn">print</span>(reporte_outliers.to_string(index=<span class="kw">False</span>))</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">def detectar_outliers_iqr(df, columnas, factor=1.5)</span><span class="desc">Creamos una función reutilizable. <code>factor=1.5</code> es el valor por defecto — si no lo cambias, usa 1.5. Puedes llamarla con <code>factor=3.0</code> para detectar solo outliers extremos.</span></div>
+    <div class="linea"><span class="cod">serie = df[col].dropna()</span><span class="desc">Elimina los nulos antes de calcular percentiles. Los nulos romperían el cálculo de Q1/Q3.</span></div>
+    <div class="linea"><span class="cod">mask_out = (df[col] &lt; lim_inf) | (df[col] &gt; lim_sup)</span><span class="desc">Crea una máscara booleana: True para cada fila que está FUERA de los límites (por abajo O por arriba). El símbolo | significa "o".</span></div>
+    <div class="linea"><span class="cod">resultados.append({...})</span><span class="desc">Acumula los resultados de cada columna en una lista de diccionarios.</span></div>
+    <div class="linea"><span class="cod">.sort_values('outliers', ascending=False)</span><span class="desc">Ordena el resultado de mayor a menor cantidad de outliers, para ver primero los problemas más grandes.</span></div>
+  </div>
+
+  <div class="output">DETECCIÓN DE OUTLIERS — Regla IQR (factor=1.5)
+
+        columna     Q1      Q3     IQR  lim_inferior  lim_superior  outliers  pct_%  max_valor
+     margen_usd  18.50  202.24  183.74       -257.11        477.85      4122  8.162    2989.08
+    costo_total  72.87 1051.92  979.05      -1395.70       2520.50      3464  6.859    7887.70
+    total_venta 102.80 1320.16 1217.36      -1723.24       3146.20      3025  5.990   83850.68
+       cantidad   1.00    3.00    2.00         -2.00          6.00      2495  4.941      10.00
+  descuento_pct   0.00    0.10    0.10         -0.15          0.25       974  1.929       0.30
+precio_unitario  59.33  660.08  600.75       -841.80       1561.20         0  0.000    1120.89
+   precio_final  56.10  627.08  570.98       -800.37       1483.55         0  0.000    1120.89</div>
+
+  <div class="box info">
+    <div class="box-icon">📊</div>
+    <div class="box-body">
+      <strong>Cómo leer esta tabla:</strong>
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li><code>margen_usd</code> tiene 4,122 outliers (8.16%) — la columna más afectada</li>
+        <li><code>precio_unitario</code> y <code>precio_final</code> tienen 0 outliers — están bien</li>
+        <li>El límite inferior negativo (ej: -1723.24 en total_venta) es matemáticamente posible pero imposible en negocio — una venta nunca puede ser negativa</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Visualización: Boxplot de total_venta</h3>
+  <p>El notebook crea un gráfico de caja para ver visualmente dónde están los outliers (aparecen como puntos sueltos fuera de la caja).</p>
+
+<pre><span class="cm"># Boxplot interactivo con Plotly</span>
+fig = go.Figure()
+
+fig.add_trace(go.Box(
+    y         = fv[<span class="st">'total_venta'</span>],   <span class="cm"># datos del eje Y</span>
+    name      = <span class="st">'total_venta'</span>,
+    boxpoints = <span class="st">'outliers'</span>,          <span class="cm"># muestra solo los puntos outliers</span>
+    marker    = <span class="fn">dict</span>(color=<span class="st">'#D85A30'</span>, size=<span class="nm">3</span>, opacity=<span class="nm">0.5</span>),
+    line      = <span class="fn">dict</span>(color=<span class="st">'#534AB7'</span>),
+    fillcolor = <span class="st">'#EEEDFE'</span>,
+))
+
+fig.update_layout(
+    title       = <span class="st">'Distribución de total_venta — outliers visibles como puntos'</span>,
+    yaxis_title = <span class="st">'USD'</span>,
+    plot_bgcolor = <span class="st">'white'</span>,
+    yaxis_tickprefix = <span class="st">'$'</span>,
+    showlegend  = <span class="kw">False</span>,
+)
+fig.show()</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">go.Box(y=fv['total_venta'])</span><span class="desc">Crea un boxplot (gráfico de caja). La "caja" muestra el rango entre Q1 y Q3. La línea del medio es la mediana. Los "bigotes" llegan a los límites IQR. Los puntos sueltos afuera son los outliers.</span></div>
+    <div class="linea"><span class="cod">boxpoints='outliers'</span><span class="desc">Le dice a Plotly que muestre como puntos solo los valores que están fuera de los límites. Si ves muchos puntos lejos de la caja, tienes muchos outliers.</span></div>
+  </div>
+
+  <h3>Histograma de total_venta</h3>
+<pre><span class="cm"># Histograma — ver la forma de la distribución</span>
+fig2 = px.histogram(
+    fv,
+    x      = <span class="st">'total_venta'</span>,
+    nbins  = <span class="nm">100</span>,           <span class="cm"># dividir en 100 barras</span>
+    title  = <span class="st">'Histograma de total_venta — ¿ves la cola derecha?'</span>,
+    labels = {<span class="st">'total_venta'</span>: <span class="st">'Total venta (USD)'</span>},
+    color_discrete_sequence = [<span class="st">'#534AB7'</span>],
+)
+fig2.update_layout(plot_bgcolor=<span class="st">'white'</span>, yaxis_title=<span class="st">'Frecuencia'</span>)
+fig2.show()</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">px.histogram(fv, x='total_venta', nbins=100)</span><span class="desc">Crea un histograma: divide todos los valores en 100 grupos ("bins") y muestra cuántos caen en cada grupo como barras. Si la mayoría de las barras están a la izquierda y hay barras sueltas muy a la derecha → hay una "cola" de outliers a la derecha.</span></div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 ¿Qué es un histograma?</div>
+    <p>Imagina que tienes 50,000 notas de examen. Las agrupas: "¿cuántos sacaron entre 0 y 10?", "¿entre 10 y 20?"... Dibujas una barra para cada grupo. Si la mayoría están entre 60-90 pero hay unas pocas notas de 999/100 que son claramente errores — eso es la "cola" del histograma que indica outliers.</p>
+  </div>
+
+  <h3>Investigar los valores más extremos</h3>
+<pre><span class="cm"># Ver exactamente qué hay en los valores más altos</span>
+q3       = fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.75</span>)
+iqr      = fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.75</span>) - fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.25</span>)
+lim_sup  = q3 + <span class="nm">1.5</span> * iqr
+
+<span class="cm"># Filtrar solo las filas outliers y ordenar de mayor a menor</span>
+outliers_df = fv[fv[<span class="st">'total_venta'</span>] > lim_sup].copy()
+outliers_df = outliers_df.sort_values(<span class="st">'total_venta'</span>, ascending=<span class="kw">False</span>)
+
+<span class="fn">print</span>(f<span class="st">"Total outliers en total_venta: {len(outliers_df):,}"</span>)
+<span class="fn">print</span>(f<span class="st">"Límite superior IQR: ${lim_sup:,.2f}\n"</span>)
+<span class="fn">print</span>(<span class="st">"TOP 10 valores más extremos:\n"</span>)
+<span class="fn">print</span>(
+    outliers_df[[<span class="st">'id_venta'</span>, <span class="st">'id_producto'</span>, <span class="st">'cantidad'</span>,
+                 <span class="st">'precio_unitario'</span>, <span class="st">'total_venta'</span>]]
+    .head(<span class="nm">10</span>)
+    .to_string(index=<span class="kw">False</span>)
+)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv[fv['total_venta'] &gt; lim_sup].copy()</span><span class="desc">Filtra solo las filas que superan el límite superior. El .copy() crea una copia independiente para que cambios en outliers_df no afecten fv original.</span></div>
+    <div class="linea"><span class="cod">.sort_values('total_venta', ascending=False)</span><span class="desc">Ordena de mayor a menor para ver primero los más extremos (los "peores" outliers).</span></div>
+    <div class="linea"><span class="cod">.head(10)</span><span class="desc">Muestra solo los primeros 10 registros. Suficiente para entender el patrón.</span></div>
+  </div>
+
+  <h3>¿Los outliers se concentran en alguna categoría de producto?</h3>
+<pre><span class="cm"># Cruzar outliers con dimensión de productos para investigar</span>
+outliers_con_prod = outliers_df.merge(
+    dim_productos[[<span class="st">'id_producto'</span>, <span class="st">'nombre'</span>, <span class="st">'categoria'</span>]],
+    on=<span class="st">'id_producto'</span>,
+    how=<span class="st">'left'</span>
+)
+
+<span class="fn">print</span>(<span class="st">"Outliers por categoría de producto:\n"</span>)
+<span class="fn">print</span>(
+    outliers_con_prod.groupby(<span class="st">'categoria'</span>)
+    .agg(
+        n_outliers       = (<span class="st">'id_venta'</span>,    <span class="st">'count'</span>),
+        total_venta_max  = (<span class="st">'total_venta'</span>, <span class="st">'max'</span>),
+        total_venta_media= (<span class="st">'total_venta'</span>, <span class="st">'mean'</span>)
+    )
+    .round(<span class="nm">2</span>)
+    .sort_values(<span class="st">'n_outliers'</span>, ascending=<span class="kw">False</span>)
+    .to_string()
+)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">outliers_df.merge(dim_productos[...], on='id_producto', how='left')</span><span class="desc">Hace un JOIN entre los outliers y la tabla de productos. Así podemos ver a qué categoría de producto pertenece cada outlier.</span></div>
+    <div class="linea"><span class="cod">.groupby('categoria').agg(...)</span><span class="desc">Agrupa los outliers por categoría de producto y calcula: cuántos hay, cuál es el máximo y cuál es la media. Esto nos dice si los outliers son de una categoría específica (señal de error sistémico) o están dispersos (señal de eventos reales).</span></div>
+  </div>
+
+  <div class="box tip">
+    <div class="box-icon">🔍</div>
+    <div class="box-body">
+      <strong>¿Para qué sirve esta investigación?</strong> Si los outliers están concentrados en una sola categoría (ej: "Electrónica"), puede ser un error de sistema específico. Si están dispersos en todas las categorías, es más probable que sean ventas corporativas reales. Esto guía la decisión de tratamiento.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     5.2 — WINSORIZACIÓN
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s52">
+  <div class="sec-hdr">
+    <div class="num b-rojo">5.2</div>
+    <div class="sec-hdr-txt">
+      <h2>5.2 — Decisión de tratamiento: Winsorización</h2>
+      <p>No eliminamos filas — recortamos valores al límite permitido</p>
+    </div>
+  </div>
+
+  <div class="box info">
+    <div class="box-icon">📋</div>
+    <div class="box-body">
+      <strong>Contexto del dataset:</strong> Los outliers de total_venta fueron generados multiplicando valores por un factor de 8 a 15 — son errores de sistema. Con ese contexto, la decisión correcta es reemplazar con el límite superior. Esta técnica se llama <strong>Winsorización</strong>.
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 ¿Qué es la Winsorización?</div>
+    <p>Imagina que tienes una regla para medir de 0 a 30 cm. Alguien mide algo que da "500 cm" — claramente un error. En vez de tirar esa medición, la <strong>recortas al máximo de tu regla: 30 cm</strong>. La medición sigue existiendo, solo que con un valor razonable. Eso es Winsorizar: recortar al límite, no eliminar.</p>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="border-left:4px solid #22C55E;">
+      <div class="ic">✂️</div>
+      <strong>Winsorización ← lo que hacemos</strong>
+      <p>Reemplazamos el valor extremo con el límite IQR. La fila de datos se conserva. No perdemos ninguna transacción.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #EF4444;">
+      <div class="ic">🗑️</div>
+      <strong>Eliminación ← lo que NO hacemos</strong>
+      <p>Perdemos transacciones completas. Introduce sesgo en los análisis de volumen. El reporte diría que se vendió menos de lo que realmente se vendió.</p>
+    </div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">winsorizat_iqr</span>(df, columna, factor=<span class="nm">1.5</span>):
+    <span class="st">"""
+    Aplica Winsorización usando los límites IQR.
+    Reemplaza valores fuera de los límites con el límite correspondiente.
+    No elimina filas — preserva todas las transacciones.
+    """</span>
+    q1      = df[columna].quantile(<span class="nm">0.25</span>)
+    q3      = df[columna].quantile(<span class="nm">0.75</span>)
+    iqr     = q3 - q1
+    lim_inf = q1 - factor * iqr    <span class="cm"># valores por debajo de esto → recortar aquí</span>
+    lim_sup = q3 + factor * iqr    <span class="cm"># valores por encima de esto → recortar aquí</span>
+
+    <span class="cm"># Contar cuántos valores serán recortados en cada extremo</span>
+    n_inf = (df[columna] < lim_inf).sum()
+    n_sup = (df[columna] > lim_sup).sum()
+
+    <span class="cm"># .clip() es el corazón de la Winsorización:</span>
+    <span class="cm"># lleva todos los valores al rango [lim_inf, lim_sup]</span>
+    <span class="cm"># → si era más bajo que lim_inf, queda en lim_inf</span>
+    <span class="cm"># → si era más alto que lim_sup, queda en lim_sup</span>
+    <span class="cm"># → si estaba dentro, no cambia</span>
+    df[columna] = df[columna].clip(lower=lim_inf, upper=lim_sup)
+
+    <span class="fn">print</span>(f<span class="st">"  '{columna}':"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Límite inferior : ${lim_inf:>10,.2f} → {n_inf} valores recortados"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Límite superior : ${lim_sup:>10,.2f} → {n_sup} valores recortados"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Nuevo máximo    : ${df[columna].max():>10,.2f}"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Nueva media     : ${df[columna].mean():>10,.2f}"</span>)
+    <span class="kw">return</span> df
+
+<span class="fn">print</span>(<span class="st">"WINSORIZACIÓN — Tratamiento de outliers\n"</span>)
+fv = <span class="fn">winsorizat_iqr</span>(fv, <span class="st">'total_venta'</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">df[columna].clip(lower=lim_inf, upper=lim_sup)</span><span class="desc">Esta es la línea más importante. <code>.clip()</code> "recorta" todos los valores: los que son menores a lim_inf se convierten en lim_inf, los que son mayores a lim_sup se convierten en lim_sup. Los que están dentro del rango no cambian.</span></div>
+    <div class="linea"><span class="cod">n_inf = (df[columna] &lt; lim_inf).sum()</span><span class="desc">Cuenta cuántos valores están por debajo del límite inferior (para reportar cuántos se recortaron).</span></div>
+    <div class="linea"><span class="cod">fv = winsorizat_iqr(fv, 'total_venta')</span><span class="desc">Llama a la función y sobreescribe fv con el resultado ya winsorizado. Después de esta línea, fv ya no tiene outliers en total_venta.</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     5.3 — VERIFICACIÓN
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s53">
+  <div class="sec-hdr">
+    <div class="num b-rojo">5.3</div>
+    <div class="sec-hdr-txt">
+      <h2>5.3 — Verificación post-tratamiento</h2>
+      <p>Confirmar que los outliers desaparecieron</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Confirmar que los outliers desaparecieron</span>
+reporte_post = <span class="fn">detectar_outliers_iqr</span>(fv, [<span class="st">'total_venta'</span>])
+<span class="fn">print</span>(<span class="st">"VERIFICACIÓN POST-WINSORIZACIÓN\n"</span>)
+<span class="fn">print</span>(reporte_post.to_string(index=<span class="kw">False</span>))</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">detectar_outliers_iqr(fv, ['total_venta'])</span><span class="desc">Reutilizamos la misma función de detección pero ahora sobre el dataset ya winsorizado. Si la Winsorización funcionó bien, la columna "outliers" debería mostrar 0.</span></div>
+  </div>
+
+<pre><span class="cm"># Comparar distribución antes y después visualmente</span>
+fig3 = go.Figure()
+
+fig3.add_trace(go.Box(
+    y         = fv[<span class="st">'total_venta'</span>],
+    name      = <span class="st">'Después de Winsorización'</span>,
+    boxpoints = <span class="st">'outliers'</span>,
+    marker    = <span class="fn">dict</span>(color=<span class="st">'#1D9E75'</span>, size=<span class="nm">3</span>),
+    line      = <span class="fn">dict</span>(color=<span class="st">'#1D9E75'</span>),
+    fillcolor = <span class="st">'#E1F5EE'</span>,
+))
+
+fig3.update_layout(
+    title       = <span class="st">'total_venta después de Winsorización'</span>,
+    yaxis_title = <span class="st">'USD'</span>,
+    plot_bgcolor = <span class="st">'white'</span>,
+    yaxis_tickprefix = <span class="st">'$'</span>,
+)
+fig3.show()</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fig3.add_trace(go.Box(...))</span><span class="desc">Mismo boxplot de antes pero ahora con los datos después de la Winsorización. La caja debería verse más "compacta" y ya no deberían aparecer puntos sueltos muy lejos.</span></div>
+  </div>
+
+  <div class="box ok">
+    <div class="box-icon">✅</div>
+    <div class="box-body">
+      <strong>¿Cómo saber que funcionó?</strong> En el boxplot post-Winsorización, los puntos de outliers deberían desaparecer (o reducirse drásticamente). El máximo ahora debería ser el límite superior calculado (~$3,146), no $83,850.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 6 — TEXTO Y DUPLICADOS
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s6">
+  <div class="sec-hdr">
+    <div class="num b-azul">6</div>
+    <div class="sec-hdr-txt">
+      <h2>6. Duplicados y Estandarización Profunda de Texto</h2>
+      <p>Primero unificas el texto, luego buscas duplicados — en ese orden</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <div class="box-icon">⚠️</div>
+    <div class="box-body">
+      <strong>El orden importa:</strong> Los duplicados a veces tienen inconsistencias de texto que los hacen parecer distintos cuando son el mismo registro. Siempre estandarizamos texto <em>antes</em> de buscar duplicados.
+    </div>
+  </div>
+
+  <h3>6.1 — Estandarización profunda de texto</h3>
+  <p>En la Sesión 2 corregimos mayúsculas/minúsculas superficialmente. Ahora atacamos las <strong>inconsistencias semánticas</strong>: valores que significan lo mismo pero están escritos diferente.</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>¿Alguna vez buscaste "gato" en Google pero escribiste "gaTo" o "GATO"? Google igual te entiende. Pero Python no hace eso — para Python "T.Debito", "Tarjeta Debito" y "Tarjeta Débito" son <strong>tres cosas completamente distintas</strong>. Si haces un gráfico, verás 3 barras en vez de una sola. Tenemos que decirle a Python que las tres son la misma cosa.</p>
+  </div>
+
+<pre><span class="cm"># Primero ver exactamente qué quedó de la Sesión 2</span>
+<span class="fn">print</span>(<span class="st">"VALORES ÚNICOS ACTUALES\n"</span>)
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'canal'</span>, <span class="st">'metodo_pago'</span>]:
+    <span class="fn">print</span>(f<span class="st">"  {col}:"</span>)
+    conteo = fv[col].value_counts(dropna=<span class="kw">False</span>)  <span class="cm"># incluye NaN</span>
+    <span class="kw">for</span> val, n <span class="kw">in</span> conteo.items():
+        <span class="fn">print</span>(f<span class="st">"    '{val}'  →  {n:,} registros"</span>)
+    <span class="fn">print</span>()</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv[col].value_counts(dropna=False)</span><span class="desc">Cuenta cuántas veces aparece cada valor único. Con <code>dropna=False</code> también incluye los nulos (NaN) en el conteo. Esto nos muestra el "mapa" de todos los valores que existen en esa columna.</span></div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">estandarizar_valores</span>(df, columna, mapa_reemplazos):
+    <span class="st">"""
+    Reemplaza valores inconsistentes según un mapa de equivalencias.
+    El mapa lo define el analista con conocimiento de negocio.
+
+    mapa_reemplazos: dict {'valor_incorrecto': 'valor_correcto'}
+    """</span>
+    n_antes  = df[columna].nunique()   <span class="cm"># cuántos valores únicos hay antes</span>
+
+    <span class="cm"># Para cada valor: si está en el mapa, reemplázalo;
+    # si no está, mantenlo igual; si es nulo, déjalo nulo</span>
+    cambios  = df[columna].map(
+        <span class="kw">lambda</span> x: mapa_reemplazos.get(x, x) <span class="kw">if</span> pd.notna(x) <span class="kw">else</span> x
+    )
+    n_cambios = (df[columna] != cambios).sum()  <span class="cm"># cuántas filas cambiaron</span>
+    df[columna] = cambios
+    n_despues = df[columna].nunique()  <span class="cm"># cuántos únicos quedan después</span>
+
+    <span class="fn">print</span>(f<span class="st">"  '{columna}':"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Valores únicos antes  : {n_antes}"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Valores únicos después: {n_despues}"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Registros modificados : {n_cambios:,}"</span>)
+    <span class="kw">return</span> df
+
+<span class="cm"># ── Mapa para la columna 'canal' ─────────────────────────────</span>
+mapa_canal = {
+    <span class="st">'Ecommerce'</span>    : <span class="st">'E-Commerce'</span>,     <span class="cm"># sin guion → con guion</span>
+    <span class="st">'App Movil'</span>    : <span class="st">'App Móvil'</span>,       <span class="cm"># sin tilde → con tilde</span>
+    <span class="st">'Telefonico'</span>   : <span class="st">'Telefónico'</span>,
+    <span class="st">'Tienda Fisica'</span>: <span class="st">'Tienda Física'</span>,
+}
+
+<span class="cm"># ── Mapa para la columna 'metodo_pago' ───────────────────────</span>
+mapa_pago = {
+    <span class="st">'Efectivo'</span>        : <span class="st">'Efectivo'</span>,          <span class="cm"># este ya está bien</span>
+    <span class="st">'T.Debito'</span>        : <span class="st">'Tarjeta Débito'</span>,    <span class="cm"># abreviación → nombre completo</span>
+    <span class="st">'Tarjeta Debito'</span>  : <span class="st">'Tarjeta Débito'</span>,    <span class="cm"># sin tilde → con tilde</span>
+    <span class="st">'Tarjeta Credito'</span> : <span class="st">'Tarjeta Crédito'</span>,
+    <span class="st">'Qr/Billetera'</span>    : <span class="st">'QR/Billetera'</span>,      <span class="cm"># capitalización</span>
+}
+
+<span class="fn">print</span>(<span class="st">"ESTANDARIZACIÓN PROFUNDA DE TEXTO\n"</span>)
+fv = <span class="fn">estandarizar_valores</span>(fv, <span class="st">'canal'</span>,       mapa_canal)
+fv = <span class="fn">estandarizar_valores</span>(fv, <span class="st">'metodo_pago'</span>, mapa_pago)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">lambda x: mapa_reemplazos.get(x, x)</span><span class="desc">Una función pequeña (lambda) que toma un valor x y lo busca en el diccionario. <code>.get(x, x)</code> significa: "dame el valor del diccionario para x, y si x no está en el diccionario, devuelve x sin cambiar".</span></div>
+    <div class="linea"><span class="cod">if pd.notna(x) else x</span><span class="desc">Si el valor es nulo (NaN), lo deja como está. No intentamos reemplazar nulos.</span></div>
+    <div class="linea"><span class="cod">n_cambios = (df[columna] != cambios).sum()</span><span class="desc">Compara la columna antes y después del reemplazo para contar cuántos registros fueron modificados.</span></div>
+  </div>
+
+<pre><span class="cm"># Verificación post-estandarización — ver resultado</span>
+<span class="fn">print</span>(<span class="st">"\nVALORES ÚNICOS DESPUÉS DE ESTANDARIZACIÓN\n"</span>)
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'canal'</span>, <span class="st">'metodo_pago'</span>]:
+    <span class="fn">print</span>(f<span class="st">"  {col}:"</span>)
+    <span class="kw">for</span> v <span class="kw">in</span> sorted(fv[col].dropna().unique()):
+        <span class="fn">print</span>(f<span class="st">"    '{v}'"</span>)
+    <span class="fn">print</span>()</pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     6.2 — DUPLICADOS
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s62">
+  <div class="sec-hdr">
+    <div class="num b-azul">6.2</div>
+    <div class="sec-hdr-txt">
+      <h2>6.2 — ¿Qué es un duplicado? Detección y eliminación</h2>
+      <p>Los 3 tipos de duplicados y cómo eliminarlos correctamente</p>
+    </div>
+  </div>
+
+  <p>Hay <strong>3 tipos</strong> de duplicados en datos transaccionales:</p>
+
+  <div class="g3">
+    <div class="card" style="border-top:3px solid #EF4444;">
+      <div class="ic">🔴</div>
+      <strong>Duplicado exacto</strong>
+      <p>Todas las columnas son idénticas. Mismo ID, mismo valor, mismo todo. Claramente un error.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #F59E0B;">
+      <div class="ic">🟡</div>
+      <strong>Duplicado de clave</strong>
+      <p>El ID es el mismo pero algún campo varía. Más difícil de detectar. Requiere investigar cuál es el correcto.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22C55E;">
+      <div class="ic">🟢</div>
+      <strong>Duplicado de negocio</strong>
+      <p>Diferentes IDs pero misma transacción real procesada dos veces por el sistema.</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que en tu lista de compras escribiste "manzanas" dos veces. Si vas al mercado y compras "manzanas" dos veces, gastás el doble de lo que debías. Los duplicados en datos hacen lo mismo: hacen que cuentes la misma venta dos veces, inflando tus ingresos reportados.</p>
+  </div>
+
+<pre><span class="cm"># ── Paso 1: Duplicados exactos (todas las columnas iguales) ──</span>
+dup_exactos = fv.duplicated().sum()
+<span class="fn">print</span>(f<span class="st">"Duplicados exactos (todas las columnas): {dup_exactos:,}"</span>)
+
+<span class="cm"># ── Paso 2: Duplicados por clave primaria id_venta ───────────</span>
+<span class="cm"># Puede haber filas con mismo id_venta pero algunos campos diferentes</span>
+dup_id = fv.duplicated(subset=[<span class="st">'id_venta'</span>]).sum()
+<span class="fn">print</span>(f<span class="st">"Duplicados por id_venta: {dup_id:,}"</span>)
+
+<span class="cm"># ── Paso 3: Ver ejemplos de duplicados para entender ─────────</span>
+<span class="fn">print</span>(<span class="st">"\nEjemplo de filas duplicadas:\n"</span>)
+mask_dup = fv.duplicated(keep=<span class="kw">False</span>)  <span class="cm"># True en TODOS (no solo el segundo)</span>
+<span class="fn">print</span>(
+    fv[mask_dup]
+    .sort_values(<span class="st">'id_venta'</span>)
+    .head(<span class="nm">6</span>)
+    [[<span class="st">'id_venta'</span>, <span class="st">'id_cliente'</span>, <span class="st">'id_producto'</span>, <span class="st">'total_venta'</span>, <span class="st">'canal'</span>]]
+    .to_string(index=<span class="kw">False</span>)
+)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv.duplicated().sum()</span><span class="desc">Detecta filas completamente idénticas (todas las columnas iguales) y cuenta cuántas hay. Por defecto marca como duplicada la SEGUNDA ocurrencia en adelante (la primera se considera "original").</span></div>
+    <div class="linea"><span class="cod">fv.duplicated(subset=['id_venta'])</span><span class="desc">Detecta duplicados solo mirando la columna id_venta. Si dos filas tienen el mismo id_venta pero diferente total_venta, esta opción las marca como duplicadas aunque la anterior no lo hiciera.</span></div>
+    <div class="linea"><span class="cod">fv.duplicated(keep=False)</span><span class="desc">Con <code>keep=False</code>, marca como True TODAS las filas duplicadas (incluyendo la primera). Así puedes verlas todas juntas para entender el patrón.</span></div>
+  </div>
+
+<pre><span class="cm"># ── Eliminación de duplicados ─────────────────────────────────</span>
+n_antes = <span class="fn">len</span>(fv)
+
+<span class="cm"># keep='first' → conserva la primera ocurrencia, elimina las siguientes</span>
+<span class="cm"># reset_index(drop=True) → renumera el índice desde 0 tras eliminar filas</span>
+fv = fv.drop_duplicates(keep=<span class="st">'first'</span>).reset_index(drop=<span class="kw">True</span>)
+
+n_despues  = <span class="fn">len</span>(fv)
+eliminadas = n_antes - n_despues
+
+<span class="fn">print</span>(f<span class="st">"Filas antes     : {n_antes:,}"</span>)
+<span class="fn">print</span>(f<span class="st">"Filas después   : {n_despues:,}"</span>)
+<span class="fn">print</span>(f<span class="st">"Filas eliminadas: {eliminadas:,} ({eliminadas/n_antes*100:.2f}%)"</span>)
+<span class="fn">print</span>(f<span class="st">"\n✅ Duplicados eliminados correctamente."</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv.drop_duplicates(keep='first')</span><span class="desc">Elimina las filas duplicadas conservando la primera ocurrencia de cada grupo. La primera que apareció en el dataset se queda; todas las copias siguientes se borran.</span></div>
+    <div class="linea"><span class="cod">.reset_index(drop=True)</span><span class="desc">Después de eliminar filas, los índices quedan con "huecos" (1, 2, 5, 7, 8...). reset_index los renumera de corrido desde 0. <code>drop=True</code> evita que el índice viejo se guarde como columna.</span></div>
+  </div>
+
+<pre><span class="cm"># ── Verificar que no quedan duplicados ───────────────────────</span>
+dup_restantes = fv.duplicated().sum()
+<span class="fn">print</span>(f<span class="st">"Duplicados restantes: {dup_restantes}"</span>)
+
+<span class="kw">if</span> dup_restantes == <span class="nm">0</span>:
+    <span class="fn">print</span>(<span class="st">"✅ Dataset libre de duplicados."</span>)</pre>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     6.3 — VIOLACIÓN DE DOMINIO
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s63">
+  <div class="sec-hdr">
+    <div class="num b-azul">6.3</div>
+    <div class="sec-hdr-txt">
+      <h2>6.3 — Violación de dominio</h2>
+      <p>El valor existe y no es nulo, pero está fuera de los valores válidos</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina una pregunta de examen donde puedes elegir A, B, C o D. Si alguien contesta "E", esa respuesta existe, no está en blanco, pero <strong>no es una opción válida</strong>. Eso es una violación de dominio: el valor existe pero no pertenece al conjunto de opciones permitidas.</p>
+  </div>
+
+<pre><span class="cm"># Validación de dominio — valores permitidos por columna</span>
+dominios = {
+    <span class="st">'region'</span> : [<span class="st">'Costa'</span>, <span class="st">'Sierra'</span>, <span class="st">'Digital'</span>],
+    <span class="st">'tipo'</span>   : [<span class="st">'Mall'</span>, <span class="st">'Tienda grande'</span>, <span class="st">'Tienda mediana'</span>, <span class="st">'Digital'</span>, <span class="st">'Híbrido'</span>],
+}
+
+<span class="fn">print</span>(<span class="st">"VALIDACIÓN DE DOMINIO — dim_sucursales\n"</span>)
+<span class="kw">for</span> col, valores_validos <span class="kw">in</span> dominios.items():
+    <span class="cm"># ~ significa "NOT" — encuentra las filas que NO están en la lista válida</span>
+    mask_invalidos = ~dim_sucursales[col].isin(valores_validos)
+    n = mask_invalidos.sum()
+
+    <span class="kw">if</span> n > <span class="nm">0</span>:
+        <span class="fn">print</span>(f<span class="st">"  ⚠️  '{col}' — {n} valor(es) fuera de dominio:"</span>)
+        <span class="fn">print</span>(dim_sucursales[mask_invalidos][[<span class="st">'id_sucursal'</span>,<span class="st">'nombre'</span>,<span class="st">'ciudad'</span>,<span class="st">'provincia'</span>,col]])
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"  ✅ '{col}' — todos los valores dentro del dominio"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">dominios = {'region': ['Costa', 'Sierra', 'Digital'], ...}</span><span class="desc">Diccionario que define los valores VÁLIDOS para cada columna. Tú lo defines según las reglas del negocio. "¿Qué regiones existen en el sistema?"</span></div>
+    <div class="linea"><span class="cod">~dim_sucursales[col].isin(valores_validos)</span><span class="desc"><code>.isin()</code> devuelve True para cada fila cuyos valores están en la lista. El <code>~</code> invierte el resultado: True pasa a ser False y viceversa. Así detectas las filas con valores INVÁLIDOS.</span></div>
+  </div>
+
+<pre><span class="cm"># ── Corrección puntual con criterio de negocio ───────────────</span>
+<span class="cm"># Loja es una provincia de la Sierra ecuatoriana</span>
+<span class="cm"># El dataset tiene 'Loja Centro' con región incorrecta</span>
+
+dim_sucursales.loc[
+    dim_sucursales[<span class="st">'nombre'</span>] == <span class="st">'Loja Centro'</span>,
+    <span class="st">'region'</span>
+] = <span class="st">'Sierra'</span>
+
+<span class="fn">print</span>(<span class="st">"✅ Corrección aplicada:"</span>)
+<span class="fn">print</span>(dim_sucursales[dim_sucursales[<span class="st">'nombre'</span>] == <span class="st">'Loja Centro'</span>][
+    [<span class="st">'nombre'</span>, <span class="st">'ciudad'</span>, <span class="st">'provincia'</span>, <span class="st">'region'</span>]
+])</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">dim_sucursales.loc[dim_sucursales['nombre'] == 'Loja Centro', 'region'] = 'Sierra'</span><span class="desc">Selecciona con .loc[] la fila donde nombre es 'Loja Centro' y cambia solo la columna 'region' a 'Sierra'. Es como editar una sola celda de una hoja de Excel de forma precisa.</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 7 — INTEGRIDAD REFERENCIAL
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s7">
+  <div class="sec-hdr">
+    <div class="num b-v">7</div>
+    <div class="sec-hdr-txt">
+      <h2>7. Integridad Referencial y JOINs de Validación</h2>
+      <p>¿Cada venta apunta a un cliente, producto y sucursal que existen?</p>
+    </div>
+  </div>
+
+  <h3>7.1 — ¿Qué es la integridad referencial?</h3>
+  <p>En el esquema estrella, cada FK (clave foránea) en <code>fact_ventas</code> debe apuntar a un registro que existe en la dimensión correspondiente. Cuando esto no ocurre, hay una <strong>FK huérfana</strong>.</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que tu tabla de ventas dice "esta venta fue hecha por el cliente número 9999". Pero cuando vas a la tabla de clientes, el número 9999 no existe. Esa venta "apunta" a alguien que no existe en el sistema — eso es una FK huérfana. Es como si una carta tuviera una dirección que no existe en el mapa.</p>
+  </div>
+
+  <div class="box danger">
+    <div class="box-icon">💀</div>
+    <div class="box-body">
+      <strong>Consecuencias de FKs huérfanas:</strong>
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li>Los JOIN con dimensiones producen filas con NaN en todas las columnas de la dimensión</li>
+        <li>Los KPIs "por segmento de cliente" o "por categoría de producto" omiten esas ventas silenciosamente</li>
+        <li>Los dashboards muestran totales menores a los reales</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>7.2 — Tipos de JOIN y su relación con integridad referencial</h3>
+
+  <div class="tw">
+    <table>
+      <tr><th>Tipo de JOIN</th><th>¿Qué hace?</th><th>FK huérfana produce</th></tr>
+      <tr><td><code>INNER JOIN</code></td><td>Solo filas que existen en AMBAS tablas</td><td>La fila desaparece del resultado</td></tr>
+      <tr><td><code>LEFT JOIN</code> ← usamos</td><td>Todas las filas de la izquierda, NaN si no hay match</td><td>NaN en columnas de la dimensión</td></tr>
+      <tr><td><code>FULL JOIN</code></td><td>Todas las filas de ambas tablas</td><td>NaN en los dos lados</td></tr>
+    </table>
+  </div>
+
+<pre><span class="cm"># Función para validar integridad referencial de una FK</span>
+<span class="kw">def</span> <span class="fn">validar_fk</span>(fact, dim, col_fk, nombre_dim, col_dim=<span class="kw">None</span>):
+    <span class="st">"""
+    Valida que todos los valores de col_fk en fact
+    existan en la dimensión correspondiente.
+
+    Usa LEFT JOIN: las FKs huérfanas producen NaN
+    en la columna de la dimensión.
+    """</span>
+    <span class="kw">if</span> col_dim <span class="kw">is None</span>:
+        col_dim = col_fk  <span class="cm"># mismo nombre en ambas tablas</span>
+
+    <span class="cm"># Tomar cualquier columna de la dimensión que no sea la PK</span>
+    col_ref = [c <span class="kw">for</span> c <span class="kw">in</span> dim.columns <span class="kw">if</span> c != col_dim][<span class="nm">0</span>]
+
+    <span class="cm"># LEFT JOIN: si la FK no existe en dim → col_ref queda como NaN</span>
+    merged   = fact[[col_fk]].merge(
+        dim[[col_dim, col_ref]],
+        left_on  = col_fk,
+        right_on = col_dim,
+        how      = <span class="st">'left'</span>
+    )
+    huerfanas = merged[col_ref].isnull().sum()  <span class="cm"># NaN = FK huérfana</span>
+    pct       = huerfanas / <span class="fn">len</span>(fact) * <span class="nm">100</span>
+
+    estado = <span class="st">"✅ OK"</span> <span class="kw">if</span> huerfanas == <span class="nm">0</span> <span class="kw">else</span> f<span class="st">"⚠️  {huerfanas:,} FKs huérfanas ({pct:.2f}%)"</span>
+    <span class="fn">print</span>(f<span class="st">"  {col_fk:<18} → {nombre_dim:<20} {estado}"</span>)
+    <span class="kw">return</span> huerfanas
+
+<span class="fn">print</span>(<span class="st">"VALIDACIÓN DE INTEGRIDAD REFERENCIAL — fact_ventas\n"</span>)
+total_huerfanas  = <span class="nm">0</span>
+total_huerfanas += <span class="fn">validar_fk</span>(fv, dim_clientes,   <span class="st">'id_cliente'</span>,  <span class="st">'dim_clientes'</span>)
+total_huerfanas += <span class="fn">validar_fk</span>(fv, dim_productos,  <span class="st">'id_producto'</span>, <span class="st">'dim_productos'</span>)
+total_huerfanas += <span class="fn">validar_fk</span>(fv, dim_sucursales, <span class="st">'id_sucursal'</span>, <span class="st">'dim_sucursales'</span>)
+total_huerfanas += <span class="fn">validar_fk</span>(fv, dim_tiempo,     <span class="st">'id_tiempo'</span>,   <span class="st">'dim_tiempo'</span>)
+<span class="fn">print</span>(f<span class="st">"\n  Total FKs huérfanas: {total_huerfanas:,}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fact[[col_fk]].merge(dim[...], left_on=col_fk, right_on=col_dim, how='left')</span><span class="desc">Hace un LEFT JOIN entre fact_ventas (solo la columna FK) y la dimensión. Si un id_cliente de fact_ventas no existe en dim_clientes, la fila fusionada tendrá NaN en la columna de la dimensión.</span></div>
+    <div class="linea"><span class="cod">merged[col_ref].isnull().sum()</span><span class="desc">Cuenta los NaN resultantes del JOIN. Cada NaN representa una FK huérfana — una venta que apunta a un cliente/producto/sucursal inexistente.</span></div>
+    <div class="linea"><span class="cod">col_ref = [c for c in dim.columns if c != col_dim][0]</span><span class="desc">Toma automáticamente la primera columna de la dimensión que no es la clave primaria. La necesitamos para detectar los NaN del JOIN.</span></div>
+  </div>
+
+  <h3>Tratamiento de FKs huérfanas</h3>
+
+<pre><span class="kw">def</span> <span class="fn">tratar_fk_huerfanas</span>(fact, dim, col_fk, col_dim=<span class="kw">None</span>, accion=<span class="st">'eliminar'</span>):
+    <span class="st">"""
+    Trata filas con FKs huérfanas.
+
+    accion='eliminar' → elimina las filas huérfanas de fact
+    accion='reportar' → solo reporta, no modifica
+    """</span>
+    <span class="kw">if</span> col_dim <span class="kw">is None</span>:
+        col_dim = col_fk
+
+    ids_validos    = <span class="fn">set</span>(dim[col_dim].unique())       <span class="cm"># IDs que SÍ existen</span>
+    mask_huerfanas = ~fv[col_fk].isin(ids_validos)    <span class="cm"># filas con ID inválido</span>
+    n = mask_huerfanas.sum()
+
+    <span class="kw">if</span> n == <span class="nm">0</span>:
+        <span class="fn">print</span>(f<span class="st">"  ✅ '{col_fk}' — sin FKs huérfanas"</span>)
+        <span class="kw">return</span> fact
+
+    <span class="kw">if</span> accion == <span class="st">'eliminar'</span>:
+        fact = fact[~mask_huerfanas].reset_index(drop=<span class="kw">True</span>)
+        <span class="fn">print</span>(f<span class="st">"  ⚠️  '{col_fk}' — {n} filas huérfanas eliminadas"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"  ⚠️  '{col_fk}' — {n} filas huérfanas (solo reporte)"</span>)
+
+    <span class="kw">return</span> fact
+
+<span class="fn">print</span>(<span class="st">"TRATAMIENTO DE FKs HUÉRFANAS\n"</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_clientes,   <span class="st">'id_cliente'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_productos,  <span class="st">'id_producto'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_sucursales, <span class="st">'id_sucursal'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_tiempo,     <span class="st">'id_tiempo'</span>)
+
+<span class="fn">print</span>(f<span class="st">"\n  Filas restantes: {len(fv):,}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">ids_validos = set(dim[col_dim].unique())</span><span class="desc">Crea un conjunto con todos los IDs que existen en la dimensión. Usar <code>set()</code> hace la búsqueda mucho más rápida que una lista cuando el dataset es grande.</span></div>
+    <div class="linea"><span class="cod">~fv[col_fk].isin(ids_validos)</span><span class="desc">Para cada fila de fact_ventas, verifica si el ID está en la lista de IDs válidos. El ~ invierte: True para los que NO están (los huérfanos).</span></div>
+    <div class="linea"><span class="cod">fact = fact[~mask_huerfanas].reset_index(drop=True)</span><span class="desc">Elimina las filas huérfanas y renumera el índice. Solo ocurre si accion='eliminar'.</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 8 — DATASET FINAL
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s8">
+  <div class="sec-hdr">
+    <div class="num b-verde">8</div>
+    <div class="sec-hdr-txt">
+      <h2>8. Construcción del Dataset Limpio Final</h2>
+      <p>Reporte ETL + JOINs con dimensiones + columnas derivadas + verificación</p>
+    </div>
+  </div>
+
+  <div class="box ok">
+    <div class="box-icon">🎉</div>
+    <div class="box-body">
+      Todos los problemas están resueltos. Ahora construimos el dataset definitivo que alimentará todas las sesiones restantes del curso: Estadística descriptiva, Clustering, Series de tiempo y Dashboard.
+    </div>
+  </div>
+
+  <h3>8.1 — Reporte completo del proceso ETL</h3>
+
+<pre><span class="fn">print</span>(<span class="st">"=" * 62</span>)
+<span class="fn">print</span>(<span class="st">"   REPORTE FINAL DEL PROCESO ETL — SESIONES 2 y 3"</span>)
+<span class="fn">print</span>(<span class="st">"=" * 62</span>)
+
+pasos = [
+    (<span class="st">"Tipos de datos corregidos"</span>,           <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Fechas convertidas a datetime64"</span>,      <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Capitalización estandarizada"</span>,         <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Nulos imputados (moda/mediana)"</span>,       <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Outliers winsorizados (IQR Tukey)"</span>,    <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Duplicados exactos eliminados"</span>,        <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Inconsistencias de texto corregidas"</span>,  <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Integridad referencial validada"</span>,      <span class="st">"✅ Sesión 3"</span>),
+]
+
+<span class="kw">for</span> paso, estado <span class="kw">in</span> pasos:
+    <span class="fn">print</span>(f<span class="st">"  {estado}  {paso}"</span>)
+
+<span class="fn">print</span>(f<span class="st">"\n  Filas en dataset original : {50500:>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Filas en dataset limpio   : {len(fv):>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Nulos restantes           : {fv.isnull().sum().sum():>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Duplicados restantes      : {fv.duplicated().sum():>10,}"</span>)
+<span class="fn">print</span>(<span class="st">"=" * 62</span>)</pre>
+
+  <h3>8.2 — Construcción del dataset analítico enriquecido</h3>
+  <p>El dataset limpio no es solo <code>fact_ventas</code> sin errores. Lo <strong>enriquecemos</strong> con las columnas más útiles de cada dimensión para que las sesiones siguientes puedan trabajar con una sola tabla.</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que tienes una libreta de ventas (fact_ventas) donde solo anotas "vendí producto #15 al cliente #302". Para saber qué fue el producto #15 y quién es el cliente #302, tienes que buscar en otras libretas. El JOIN es como <strong>copiar la información relevante de esas otras libretas</strong> a tu libreta de ventas, para que todo esté junto y fácil de consultar.</p>
+  </div>
+
+<pre><span class="cm"># ── JOIN con dim_tiempo: agregar fecha, mes, año, etc. ───────</span>
+fv_limpia = fv.merge(
+    dim_tiempo[[<span class="st">'id_tiempo'</span>, <span class="st">'fecha'</span>, <span class="st">'anio'</span>, <span class="st">'trimestre'</span>, <span class="st">'mes'</span>,
+                <span class="st">'mes_nombre'</span>, <span class="st">'dia_nombre'</span>, <span class="st">'es_finde'</span>,
+                <span class="st">'es_feriado'</span>, <span class="st">'temporada'</span>]],
+    on  = <span class="st">'id_tiempo'</span>,    <span class="cm"># columna en común para hacer el JOIN</span>
+    how = <span class="st">'left'</span>          <span class="cm"># LEFT JOIN: conservar todas las ventas</span>
+)
+
+<span class="cm"># ── JOIN con dim_productos: agregar categoría y margen ───────</span>
+fv_limpia = fv_limpia.merge(
+    dim_productos[[<span class="st">'id_producto'</span>, <span class="st">'nombre'</span>, <span class="st">'categoria'</span>,
+                   <span class="st">'precio_costo'</span>, <span class="st">'margen_bruto'</span>]],
+    on       = <span class="st">'id_producto'</span>,
+    how      = <span class="st">'left'</span>,
+    suffixes = (<span class="st">''</span>, <span class="st">'_prod'</span>)   <span class="cm"># si hay columnas con mismo nombre, agrega sufijo</span>
+)
+
+<span class="cm"># ── JOIN con dim_sucursales: agregar ciudad, provincia, región</span>
+fv_limpia = fv_limpia.merge(
+    dim_sucursales[[<span class="st">'id_sucursal'</span>, <span class="st">'nombre'</span>, <span class="st">'ciudad'</span>,
+                    <span class="st">'provincia'</span>, <span class="st">'region'</span>, <span class="st">'tipo'</span>]],
+    on       = <span class="st">'id_sucursal'</span>,
+    how      = <span class="st">'left'</span>,
+    suffixes = (<span class="st">''</span>, <span class="st">'_suc'</span>)
+)
+
+<span class="cm"># ── JOIN con dim_clientes: agregar segmento, edad, ingreso ───</span>
+fv_limpia = fv_limpia.merge(
+    dim_clientes[[<span class="st">'id_cliente'</span>, <span class="st">'segmento'</span>, <span class="st">'edad'</span>,
+                  <span class="st">'ingreso_mensual'</span>, <span class="st">'genero'</span>]],
+    on  = <span class="st">'id_cliente'</span>,
+    how = <span class="st">'left'</span>
+)
+
+<span class="fn">print</span>(f<span class="st">"✅ Dataset analítico construido"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas    : {len(fv_limpia):,}"</span>)
+<span class="fn">print</span>(f<span class="st">"   Columnas : {fv_limpia.shape[1]}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv.merge(dim_tiempo[...], on='id_tiempo', how='left')</span><span class="desc">Hace un LEFT JOIN de fact_ventas con dim_tiempo. La columna en común es 'id_tiempo'. Para cada fila de ventas, busca el registro en dim_tiempo que tenga el mismo id_tiempo y añade sus columnas.</span></div>
+    <div class="linea"><span class="cod">suffixes=('', '_prod')</span><span class="desc">Si dos columnas del JOIN tienen el mismo nombre (ej: 'nombre' en ventas y 'nombre' en productos), agrega '_prod' al de productos para diferenciarlos.</span></div>
+    <div class="linea"><span class="cod">dim_tiempo[['id_tiempo', 'fecha', 'anio', ...]]</span><span class="desc">Solo toma las columnas que necesitamos de dim_tiempo. No queremos unir TODA la dimensión — solo las columnas útiles para el análisis.</span></div>
+  </div>
+
+  <h3>Columnas derivadas de negocio</h3>
+  <p>Agregamos columnas calculadas que serán los KPIs base en el dashboard.</p>
+
+<pre><span class="cm"># ── 1. Margen porcentual real por transacción ─────────────────</span>
+fv_limpia[<span class="st">'margen_pct_real'</span>] = (
+    fv_limpia[<span class="st">'margen_usd'</span>] / fv_limpia[<span class="st">'total_venta'</span>] * <span class="nm">100</span>
+).round(<span class="nm">2</span>)
+
+<span class="cm"># ── 2. Año-Mes como string para visualizaciones ──────────────</span>
+fv_limpia[<span class="st">'anio_mes'</span>] = (
+    fv_limpia[<span class="st">'anio'</span>].astype(<span class="fn">str</span>) + <span class="st">'-'</span> +
+    fv_limpia[<span class="st">'mes'</span>].astype(<span class="fn">str</span>).str.zfill(<span class="nm">2</span>)   <span class="cm"># zfill(2): "1" → "01"</span>
+)
+
+<span class="cm"># ── 3. Indicador de si la venta tuvo descuento ───────────────</span>
+fv_limpia[<span class="st">'tiene_descuento'</span>] = (fv_limpia[<span class="st">'descuento_pct'</span>] > <span class="nm">0</span>).astype(<span class="fn">int</span>)
+<span class="cm"># True/False → 1/0</span>
+
+<span class="cm"># ── 4. Canal agrupado: físico vs digital ─────────────────────</span>
+fv_limpia[<span class="st">'canal_tipo'</span>] = fv_limpia[<span class="st">'canal'</span>].map({
+    <span class="st">'Tienda Física'</span> : <span class="st">'Físico'</span>,
+    <span class="st">'E-Commerce'</span>    : <span class="st">'Digital'</span>,
+    <span class="st">'App Móvil'</span>     : <span class="st">'Digital'</span>,
+    <span class="st">'Telefónico'</span>    : <span class="st">'Digital'</span>,
+})
+
+<span class="fn">print</span>(<span class="st">"✅ Columnas derivadas creadas:"</span>)
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'margen_pct_real'</span>, <span class="st">'anio_mes'</span>, <span class="st">'tiene_descuento'</span>, <span class="st">'canal_tipo'</span>]:
+    <span class="fn">print</span>(f<span class="st">"   + {col}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv_limpia['margen_pct_real'] = (margen_usd / total_venta * 100).round(2)</span><span class="desc">Calcula el margen como porcentaje de la venta. Si vendiste $100 y ganaste $30, tu margen es 30%. .round(2) redondea a 2 decimales.</span></div>
+    <div class="linea"><span class="cod">.str.zfill(2)</span><span class="desc">Rellena con ceros a la izquierda hasta tener 2 caracteres. Así "1" (enero) se convierte en "01" para que al ordenar alfabéticamente quede correcto: "2024-01" antes de "2024-10".</span></div>
+    <div class="linea"><span class="cod">(fv_limpia['descuento_pct'] > 0).astype(int)</span><span class="desc">Crea una columna 0/1: 1 si la venta tuvo descuento, 0 si no. Primero crea True/False y luego .astype(int) convierte True→1 y False→0.</span></div>
+    <div class="linea"><span class="cod">fv_limpia['canal'].map({'Tienda Física': 'Físico', ...})</span><span class="desc">Reemplaza los 4 canales específicos por solo 2 categorías (Físico/Digital). Útil para análisis que necesitan simplificar los datos.</span></div>
+  </div>
+
+  <h3>Verificación final de calidad</h3>
+
+<pre><span class="cm"># Lista de checks — todos deben pasar en True</span>
+checks = {
+    <span class="st">'Sin valores nulos'</span>       : fv_limpia.isnull().sum().sum() == <span class="nm">0</span>,
+    <span class="st">'Sin duplicados'</span>          : fv_limpia.duplicated().sum() == <span class="nm">0</span>,
+    <span class="st">'total_venta > 0'</span>         : (fv_limpia[<span class="st">'total_venta'</span>] > <span class="nm">0</span>).all(),
+    <span class="st">'cantidad > 0'</span>            : (fv_limpia[<span class="st">'cantidad'</span>] > <span class="nm">0</span>).all(),
+    <span class="st">'descuento_pct en [0,0.5]'</span>: fv_limpia[<span class="st">'descuento_pct'</span>].between(<span class="nm">0</span>, <span class="nm">0.5</span>).all(),
+    <span class="st">'categorias completas'</span>    : fv_limpia[<span class="st">'categoria'</span>].notnull().all(),
+    <span class="st">'provincias completas'</span>    : fv_limpia[<span class="st">'provincia'</span>].notnull().all(),
+    <span class="st">'segmentos completos'</span>     : fv_limpia[<span class="st">'segmento'</span>].notnull().all(),
+}
+
+todos_ok = <span class="kw">True</span>
+<span class="kw">for</span> check, resultado <span class="kw">in</span> checks.items():
+    estado = <span class="st">"✅"</span> <span class="kw">if</span> resultado <span class="kw">else</span> <span class="st">"❌"</span>
+    <span class="fn">print</span>(f<span class="st">"  {estado}  {check}"</span>)
+    <span class="kw">if not</span> resultado:
+        todos_ok = <span class="kw">False</span>
+
+<span class="fn">print</span>(f<span class="st">"\n{'✅ Dataset listo para análisis.' if todos_ok else '❌ Revisar checks fallidos.'}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv_limpia['total_venta'] > 0).all()</span><span class="desc"><code>.all()</code> devuelve True solo si TODAS las filas cumplen la condición. Si aunque sea una sola venta es 0 o negativa, devuelve False. Es como un "y" aplicado a todo el dataset.</span></div>
+    <div class="linea"><span class="cod">fv_limpia['descuento_pct'].between(0, 0.5).all()</span><span class="desc"><code>.between(0, 0.5)</code> verifica que cada descuento esté entre 0% y 50%. Un descuento de 60% sería una violación de dominio.</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SECCIÓN 9 — CIERRE
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="s9">
+  <div class="sec-hdr">
+    <div class="num b-am">9</div>
+    <div class="sec-hdr-txt">
+      <h2>9. Validación Final y Cierre</h2>
+      <p>Comparativa antes/después y guardado del dataset limpio</p>
+    </div>
+  </div>
+
+  <h3>9.1 — Estadísticas comparativas: antes vs. después del ETL</h3>
+
+<pre><span class="fn">print</span>(<span class="st">"COMPARATIVA ANTES vs. DESPUÉS DEL ETL\n"</span>)
+<span class="fn">print</span>(f<span class="st">"{'Métrica':<30} {'Antes':>12} {'Después':>12} {'Cambio':>10}"</span>)
+<span class="fn">print</span>(<span class="st">"─" * 68</span>)
+
+<span class="cm"># Recargar el archivo de la Sesión 2 para comparar</span>
+original = pd.read_excel(<span class="st">'fv_checkpoint_nulos.xlsx'</span>)
+
+comparativas = [
+    (<span class="st">'Filas totales'</span>,       <span class="fn">len</span>(original),                    <span class="fn">len</span>(fv_limpia),                   <span class="st">''</span>),
+    (<span class="st">'Nulos totales'</span>,       original.isnull().sum().sum(),     fv_limpia.isnull().sum().sum(),    <span class="st">''</span>),
+    (<span class="st">'Duplicados'</span>,          original.duplicated().sum(),       fv_limpia.duplicated().sum(),      <span class="st">''</span>),
+    (<span class="st">'Media total_venta'</span>,   original[<span class="st">'total_venta'</span>].mean(),    fv_limpia[<span class="st">'total_venta'</span>].mean(),   <span class="st">'USD'</span>),
+    (<span class="st">'Mediana total_venta'</span>, original[<span class="st">'total_venta'</span>].median(),  fv_limpia[<span class="st">'total_venta'</span>].median(), <span class="st">'USD'</span>),
+    (<span class="st">'Máx total_venta'</span>,     original[<span class="st">'total_venta'</span>].max(),     fv_limpia[<span class="st">'total_venta'</span>].max(),    <span class="st">'USD'</span>),
+]
+
+<span class="kw">for</span> nombre, antes, despues, unidad <span class="kw">in</span> comparativas:
+    <span class="kw">if</span> <span class="fn">isinstance</span>(antes, <span class="fn">float</span>):
+        <span class="fn">print</span>(f<span class="st">"  {nombre:<30} {antes:>12,.2f} {despues:>12,.2f} {unidad}"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"  {nombre:<30} {antes:>12,} {despues:>12,} {unidad}"</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">original = pd.read_excel('fv_checkpoint_nulos.xlsx')</span><span class="desc">Recarga el dataset de ANTES del ETL de la Sesión 3 para tener la referencia de comparación.</span></div>
+    <div class="linea"><span class="cod">isinstance(antes, float)</span><span class="desc">Verifica si el valor es un número decimal (float) o entero. Dependiendo del tipo, usa diferente formato de impresión (con o sin decimales).</span></div>
+  </div>
+
+  <h3>9.2 — Guardar el dataset limpio</h3>
+
+<pre><span class="cm"># Guardar como CSV para todas las sesiones siguientes</span>
+<span class="cm"># (CSV es más estándar y liviano que Excel para análisis)</span>
+
+ruta_limpia = RUTA_OUTPUTS + <span class="st">'fv_limpia_final.csv'</span>
+fv_limpia.to_csv(ruta_limpia, index=<span class="kw">False</span>)  <span class="cm"># index=False: no guardar el índice de pandas</span>
+
+<span class="fn">print</span>(f<span class="st">"💾 Dataset limpio guardado: fv_limpia_final.csv"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas    : {len(fv_limpia):,}"</span>)
+<span class="fn">print</span>(f<span class="st">"   Columnas : {fv_limpia.shape[1]}"</span>)
+<span class="fn">print</span>(f<span class="st">"\n   Este archivo es el insumo de todas las sesiones siguientes."</span>)</pre>
+
+  <div class="explain-code">
+    <div class="linea"><span class="cod">fv_limpia.to_csv(ruta_limpia, index=False)</span><span class="desc">Guarda el DataFrame como archivo CSV (texto separado por comas). Con <code>index=False</code> no guarda la columna del índice de pandas (0, 1, 2, 3...) que no tiene valor de negocio.</span></div>
+  </div>
+
+  <div class="box ok">
+    <div class="box-icon">✅</div>
+    <div class="box-body">
+      <strong>¿Por qué guardar en CSV y no en Excel?</strong> El CSV es:
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li>Más liviano (sin formato, fórmulas, hojas múltiples)</li>
+        <li>Compatible con CUALQUIER herramienta de análisis (Python, R, SQL, Tableau, Power BI...)</li>
+        <li>Más rápido de leer para datasets grandes</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     CIERRE DEL NOTEBOOK
+══════════════════════════════════════════════════════ -->
+<section class="sec" id="cierre-nb">
+  <div class="sec-hdr">
+    <div class="num b-gr">📝</div>
+    <div class="sec-hdr-txt">
+      <h2>Cierre de las sesiones ETL</h2>
+      <p>Reflexión final del notebook — por qué esto importa</p>
+    </div>
+  </div>
+
+  <div class="box tip">
+    <div class="box-icon">💜</div>
+    <div class="box-body">
+      <strong>Cita textual del notebook:</strong><br><em>"El proceso ETL no es un paso técnico — es una decisión estadística y de negocio que determina la calidad de todo lo que viene después.</em>
+      <ul style="margin-top:8px;margin-left:16px;">
+        <li>Cada sesión del curso a partir de aquí usa <code>fv_limpia_final.csv</code>.</li>
+        <li>La calidad de los análisis, el clustering, el forecasting y el dashboard dependen de las decisiones que tomamos en estas dos sesiones."</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Todo lo que hiciste en la Sesión 3</h3>
+
+  <div class="tw">
+    <table>
+      <tr><th>Paso</th><th>¿Qué hiciste?</th><th>Herramienta Python</th></tr>
+      <tr><td>Carga</td><td>Retomaste el checkpoint de Sesión 2</td><td><code>pd.read_excel()</code></td></tr>
+      <tr><td>4.3 Impacto</td><td>Demostraste cuánto distorsionan los outliers</td><td><code>quantile(), mean(), std()</code></td></tr>
+      <tr><td>5.1 Detección</td><td>Detectaste outliers en 7 columnas numéricas con IQR</td><td><code>detectar_outliers_iqr()</code></td></tr>
+      <tr><td>5.1 Visualización</td><td>Graficaste boxplot e histograma</td><td><code>go.Box(), px.histogram()</code></td></tr>
+      <tr><td>5.2 Winsorización</td><td>Recortaste valores extremos sin eliminar filas</td><td><code>.clip(lower=, upper=)</code></td></tr>
+      <tr><td>5.3 Verificación</td><td>Confirmaste que los outliers desaparecieron</td><td><code>detectar_outliers_iqr()</code></td></tr>
+      <tr><td>6.1 Texto</td><td>Unificaste sinónimos con mapas de equivalencias</td><td><code>estandarizar_valores()</code></td></tr>
+      <tr><td>6.2 Duplicados</td><td>Detectaste y eliminaste duplicados exactos</td><td><code>duplicated(), drop_duplicates()</code></td></tr>
+      <tr><td>6.3 Dominio</td><td>Detectaste y corregiste violaciones de dominio</td><td><code>.isin(), .loc[]</code></td></tr>
+      <tr><td>7. Integridad</td><td>Validaste FKs con LEFT JOINs y eliminaste huérfanas</td><td><code>validar_fk(), tratar_fk_huerfanas()</code></td></tr>
+      <tr><td>8.1 Reporte</td><td>Generaste el reporte final del ETL completo</td><td>Impresión formateada</td></tr>
+      <tr><td>8.2 JOINs</td><td>Enriqueciste fact_ventas con todas las dimensiones</td><td><code>.merge(how='left')</code></td></tr>
+      <tr><td>8.2 Derivadas</td><td>Creaste columnas calculadas (margen%, año-mes, etc.)</td><td>Operaciones vectorizadas</td></tr>
+      <tr><td>8.2 Checks</td><td>Verificación final con 8 condiciones</td><td><code>.all(), .between(), .notnull()</code></td></tr>
+      <tr><td>9.1 Comparativa</td><td>Comparaste estadísticas antes/después del ETL</td><td><code>mean(), median(), max()</code></td></tr>
+      <tr><td>9.2 Guardar</td><td>Exportaste el dataset limpio final como CSV</td><td><code>.to_csv(index=False)</code></td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- BLOQUE FINAL -->
+<div class="cierre">
+  <h2>🚀 ¡ETL completado!</h2>
+  <p>Tu dataset pasó de ser datos sucios y desordenados a un dataset limpio, enriquecido y listo para análisis. Todo lo que viene en el curso se construye sobre esta base.</p>
+  <div class="flujo">
+    <div class="fp">📂 Carga</div><div class="fa">→</div>
+    <div class="fp">🔍 Outliers</div><div class="fa">→</div>
+    <div class="fp">✂️ Winsorización</div><div class="fa">→</div>
+    <div class="fp">🔤 Texto</div><div class="fa">→</div>
+    <div class="fp">📋 Duplicados</div><div class="fa">→</div>
+    <div class="fp">🚫 Dominio</div><div class="fa">→</div>
+    <div class="fp">🔗 Integridad</div><div class="fa">→</div>
+    <div class="fp">🔀 JOINs</div><div class="fa">→</div>
+    <div class="fp">💾 fv_limpia_final.csv</div>
+  </div>
+  <p style="margin-top:24px;font-size:.85rem;">Sesión 3 — Inteligencia de Negocios · 52 celdas del notebook cubiertas al 100%</p>
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>
