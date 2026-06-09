@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ETL Completo — Sesiones 2 y 3</title>
+<style>
+:root{
+  --azul:#2D3FE7;--violeta:#534AB7;--verde:#1D9E75;
+  --rojo:#D85A30;--am:#F59E0B;--gris:#F5F6FA;
+  --borde:#E2E8F0;--txt:#1A1A2E;--cy:#0EA5E9;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris);color:var(--txt);line-height:1.8;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0F0F1E 0%,#1A1A2E 50%,#2D3FE7 100%);color:#fff;text-align:center;padding:72px 24px 52px;}
+.hero .badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 18px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px;}
+.hero h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.15;margin-bottom:16px;}
+.hero h1 em{color:#A5B4FC;font-style:normal;}
+.hero p{font-size:1.05rem;opacity:.82;max-width:620px;margin:0 auto 22px;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:5px 14px;font-size:.8rem;}
+
+/* NAV STICKY */
+.nav{background:#fff;border-bottom:2px solid var(--borde);padding:10px 16px;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.nav a{text-decoration:none;color:#475569;font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:6px;border:1px solid var(--borde);transition:all .15s;letter-spacing:.02em;}
+.nav a:hover,.nav a.s2{background:var(--azul);color:#fff;border-color:var(--azul);}
+.nav a.s3{background:var(--violeta);color:#fff;border-color:var(--violeta);}
+.nav .sep{color:#CBD5E1;align-self:center;font-size:1rem;}
+
+/* BAND */
+.band{text-align:center;padding:14px 20px;font-weight:700;font-size:.85rem;letter-spacing:.04em;}
+.band-s2{background:linear-gradient(90deg,#2D3FE7,#0EA5E9);color:#fff;}
+.band-s3{background:linear-gradient(90deg,#534AB7,#D85A30);color:#fff;}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:36px 18px 80px;}
+
+/* SECTION */
+.sec{background:#fff;border-radius:16px;padding:36px;margin-bottom:32px;border:1px solid var(--borde);box-shadow:0 2px 12px rgba(0,0,0,.04);}
+.sec-hdr{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid var(--gris);}
+.num{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;flex-shrink:0;color:#fff;}
+.c1{background:var(--azul);} .c2{background:var(--cy);} .c3{background:var(--verde);}
+.c4{background:var(--rojo);} .c5{background:var(--violeta);} .c6{background:#64748B;}
+.c7{background:#EC4899;} .c8{background:var(--am);}
+
+.sec-hdr-txt h2{font-size:1.45rem;font-weight:800;}
+.sec-hdr-txt p{font-size:.87rem;color:#64748B;margin-top:3px;}
+
+h3{font-size:1.1rem;font-weight:700;margin:26px 0 10px;color:var(--txt);}
+h4{font-size:.96rem;font-weight:700;margin:18px 0 8px;color:var(--violeta);}
+p{margin-bottom:13px;color:#334155;}
+ul,ol{margin-left:22px;margin-bottom:13px;color:#475569;}
+li{margin-bottom:5px;}
+strong{color:#1A1A2E;}
+
+/* CALLOUTS */
+.box{border-radius:10px;padding:16px 20px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;}
+.bi{font-size:1.3rem;flex-shrink:0;margin-top:2px;}
+.bb{flex:1;}
+.bb strong{display:block;margin-bottom:4px;}
+.info{background:#EFF6FF;border-left:4px solid #3B82F6;}
+.warn{background:#FFFBEB;border-left:4px solid #F59E0B;}
+.danger{background:#FEF2F2;border-left:4px solid #EF4444;}
+.ok{background:#F0FDF4;border-left:4px solid #22C55E;}
+.tip{background:#F5F3FF;border-left:4px solid #8B5CF6;}
+.book{background:#FFF8F0;border-left:4px solid #F59E0B;}
+
+/* NIÑO */
+.nino{background:linear-gradient(135deg,#FFF9E6,#FFF0CC);border:2px dashed #F59E0B;border-radius:12px;padding:16px 20px;margin:16px 0;}
+.nino .et{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#92400E;margin-bottom:5px;}
+.nino p{color:#78350F;margin:0;}
+
+/* LIBRO */
+.libro{background:#FFF8F0;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;margin:16px 0;display:flex;gap:12px;align-items:flex-start;}
+.libro .ic{font-size:1.8rem;flex-shrink:0;}
+.libro .ct{flex:1;}
+.libro .ct .ttl{font-weight:700;color:#92400E;font-size:.92rem;}
+.libro .ct .auth{font-size:.82rem;color:#78350F;margin-top:2px;}
+.libro .ct .cita{font-style:italic;font-size:.87rem;color:#57534E;margin-top:6px;border-left:3px solid #F59E0B;padding-left:10px;}
+
+/* CÓDIGO */
+pre{background:#1E1E2E;color:#CDD6F4;border-radius:12px;padding:20px;overflow-x:auto;font-size:.82rem;font-family:'Consolas','Courier New',monospace;margin:14px 0;line-height:1.7;}
+.kw{color:#CBA6F7;} .fn{color:#89DCEB;} .st{color:#A6E3A1;}
+.nm{color:#FAB387;} .cm{color:#6C7086;font-style:italic;} .op{color:#89B4FA;}
+
+/* EXPLICACIÓN CÓDIGO */
+.xc{background:#F8FAFF;border:1px solid #DBEAFE;border-radius:10px;padding:15px 18px;margin:6px 0 16px;}
+.xl{margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;}
+.xl:last-child{margin-bottom:0;}
+.xc0{font-family:monospace;background:#EEF2FF;padding:2px 8px;border-radius:5px;white-space:nowrap;font-size:.78rem;color:#4338CA;flex-shrink:0;margin-top:2px;}
+.xd{color:#374151;flex:1;font-size:.88rem;line-height:1.65;}
+
+/* OUTPUT */
+.out{background:#0D1117;color:#A6E3A1;border-radius:8px;padding:14px 18px;font-family:'Consolas',monospace;font-size:.8rem;margin:10px 0 16px;border-left:4px solid var(--verde);overflow-x:auto;white-space:pre-wrap;word-break:break-word;}
+
+/* TABLA */
+.tw{overflow-x:auto;margin:16px 0;}
+table{width:100%;border-collapse:collapse;font-size:.87rem;}
+th{background:#F1F5F9;font-weight:700;padding:10px 14px;text-align:left;border-bottom:2px solid var(--borde);color:#334155;}
+td{padding:9px 14px;border-bottom:1px solid var(--borde);color:#475569;}
+tr:hover td{background:#F8FAFF;}
+.bg{background:#D1FAE5;color:#065F46;border-radius:5px;padding:2px 8px;font-size:.75rem;font-weight:700;}
+.br{background:#FEE2E2;color:#991B1B;border-radius:5px;padding:2px 8px;font-size:.75rem;font-weight:700;}
+.ba{background:#DBEAFE;color:#1E40AF;border-radius:5px;padding:2px 8px;font-size:.75rem;font-weight:700;}
+.by{background:#FEF3C7;color:#92400E;border-radius:5px;padding:2px 8px;font-size:.75rem;font-weight:700;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}
+@media(max-width:620px){.g2,.g3{grid-template-columns:1fr;}}
+.card{border:1px solid var(--borde);border-radius:12px;padding:16px;background:#FAFAFA;}
+.card .ic{font-size:1.7rem;margin-bottom:8px;}
+.card strong{display:block;margin-bottom:5px;font-size:.95rem;}
+.card p{font-size:.83rem;color:#475569;margin:0;}
+
+/* FORMULA */
+.fml{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:16px 20px;text-align:center;margin:16px 0;font-size:1rem;line-height:2;}
+
+/* FLUJO */
+.flujo{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:20px 0;}
+.fp{background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:8px 14px;font-size:.82rem;font-weight:600;color:#4338CA;}
+.fa{font-size:1.2rem;color:#94A3B8;}
+
+/* CIERRE */
+.cierre{background:linear-gradient(135deg,#0F0F1E,#2D3FE7);color:#fff;border-radius:16px;padding:36px;text-align:center;margin-top:36px;}
+.cierre h2{font-size:1.8rem;font-weight:800;margin-bottom:14px;}
+.cierre p{opacity:.85;max-width:580px;margin:0 auto 20px;}
+.flujo-f{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px;margin:24px 0;}
+.fp2{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 14px;font-size:.82rem;font-weight:600;}
+.fa2{opacity:.4;font-size:1.2rem;}
+
+/* BIBLIO */
+.biblio-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+@media(max-width:600px){.biblio-grid{grid-template-columns:1fr;}}
+.bib-card{border:1px solid #FDE68A;border-radius:10px;padding:14px;background:#FFFBEB;}
+.bib-card .bc-t{font-weight:700;font-size:.88rem;color:#92400E;}
+.bib-card .bc-a{font-size:.8rem;color:#78350F;margin-top:3px;}
+.bib-card .bc-y{font-size:.75rem;color:#B45309;margin-top:2px;font-style:italic;}
+
+hr{border:none;border-top:2px solid var(--gris);margin:28px 0;}
+code{background:#EEF2FF;color:#4338CA;padding:1px 6px;border-radius:4px;font-size:.85em;font-family:monospace;}
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="badge">Inteligencia de Negocios · ETL Completo</div>
+  <h1>Sesiones 2 y 3 —<br><em>Proceso ETL de principio a fin</em></h1>
+  <p>Todo el código de los dos notebooks explicado paso a paso, con referencias bibliográficas reales y ejemplos "como para un niño de 8 años".</p>
+  <div class="hero-pills">
+    <span class="pill">📦 Sesión 2: Auditoría · Tipos · Fechas · Nulos</span>
+    <span class="pill">🔧 Sesión 3: Outliers · Texto · Duplicados · Integridad · Dataset Final</span>
+    <span class="pill">50,500 filas · 9 pasos ETL</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#intro" class="s2">¿Qué es ETL?</a>
+  <a href="#problemas" class="s2">6 Problemas</a>
+  <a href="#s1">Auditoría</a>
+  <a href="#s12">Categóricas</a>
+  <a href="#s13">Rangos</a>
+  <a href="#s14">Dimensiones</a>
+  <a href="#s2t">Tipos datos</a>
+  <a href="#s22">Fechas</a>
+  <a href="#s23">Strings</a>
+  <span class="sep">|</span>
+  <a href="#s3" class="s3">Nulos MCAR/MAR</a>
+  <a href="#s32">Técnicas</a>
+  <a href="#s33">Diagnóstico</a>
+  <a href="#s3t">Imputación</a>
+  <a href="#checkpoint">Checkpoint</a>
+  <span class="sep">|</span>
+  <a href="#s4" class="s3">Outliers</a>
+  <a href="#s42">IQR+Z</a>
+  <a href="#s43">Impacto</a>
+  <a href="#s5">Detección</a>
+  <a href="#wins">Winsori.</a>
+  <a href="#s6">Texto</a>
+  <a href="#dup">Duplicados</a>
+  <a href="#dom">Dominio</a>
+  <a href="#s7">Integridad</a>
+  <a href="#s8">Dataset Final</a>
+  <a href="#biblio">Bibliografía</a>
+</nav>
+
+<!-- ============================================================
+     INTRODUCCIÓN ETL
+     ============================================================ -->
+<div class="band band-s2">📘 SESIÓN 2 — Primera parte del ETL</div>
+
+<div class="wrap">
+
+<section class="sec" id="intro">
+  <div class="sec-hdr">
+    <div class="num c1">🚀</div>
+    <div class="sec-hdr-txt">
+      <h2>¿Qué es ETL y por qué importa?</h2>
+      <p>El fundamento de todo análisis de datos</p>
+    </div>
+  </div>
+
+  <p><strong>ETL</strong> son las siglas de <strong>Extract, Transform, Load</strong> — el proceso mediante el cual los datos pasan de sus fuentes originales a un estado utilizable para el análisis y la toma de decisiones.</p>
+
+  <div class="g3">
+    <div class="card" style="border-top:4px solid var(--azul);">
+      <div class="ic">📥</div>
+      <strong>Extract (Extraer)</strong>
+      <p>Cargar datos desde la fuente original: archivos Excel, bases de datos, APIs, etc. Sin tocar ni modificar nada.</p>
+    </div>
+    <div class="card" style="border-top:4px solid var(--am);">
+      <div class="ic">🔧</div>
+      <strong>Transform (Transformar)</strong>
+      <p>Limpiar, corregir, estandarizar y enriquecer los datos. Aquí está el 80% del trabajo de un Data Scientist.</p>
+    </div>
+    <div class="card" style="border-top:4px solid var(--verde);">
+      <div class="ic">📤</div>
+      <strong>Load (Cargar)</strong>
+      <p>Guardar el dataset limpio en el destino final: un data warehouse, CSV limpio, base de datos analítica.</p>
+    </div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">Python for Data Analysis — Wes McKinney (O'Reilly, 3ª ed. 2022)</div>
+      <div class="auth">Wes McKinney · Creador de la librería pandas</div>
+      <div class="cita">"Data cleaning, transformation, and rearranging are often referred to colloquially as data wrangling or data munging. These terms have come to describe the often messy and time-consuming process of transforming data from raw form into something usable for analysis."</div>
+    </div>
+  </div>
+
+  <div class="box danger">
+    <div class="bi">🗑️</div>
+    <div class="bb">
+      <strong>"Garbage in, garbage out." — Principio fundamental en ciencia de datos</strong>
+      Un análisis incorrecto sobre datos sucios no es un error de análisis — es un error de datos. Y ese error se propaga silenciosamente hasta el dashboard que ve el gerente.
+    </div>
+  </div>
+
+  <h3>Consecuencias reales de saltarse el ETL</h3>
+  <ul>
+    <li>Un KPI de ventas inflado por registros duplicados que nadie detectó</li>
+    <li>Un promedio de ticket distorsionado por outliers no tratados</li>
+    <li>Una segmentación de clientes incorrecta por nulos mal imputados</li>
+    <li>Decisiones de negocio tomadas sobre información que parece correcta pero no lo es</li>
+  </ul>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que tu mamá te pide que cuentes todos los juguetes de la casa para saber cuántos tienes. Pero algunos juguetes están rotos, otros están repetidos, y otros no son tuyos. Si los cuentas todos igual, le dices "tengo 100 juguetes" cuando en realidad solo tienes 65 buenos. ETL es el proceso de ordenar, quitar los rotos, eliminar los repetidos y separar los que no son tuyos — antes de contarlos.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="bi">🏆</div>
+    <div class="bb">
+      <strong>La Regla de Oro del ETL (del notebook):</strong> Nunca modifiques el archivo original. Siempre trabajamos sobre una copia y guardamos el resultado con un nombre nuevo. El archivo <code>BIZDATA_dataset_maestro_retail.xlsx</code> nunca se toca.
+    </div>
+  </div>
+</section>
+
+<!-- 6 PROBLEMAS -->
+<section class="sec" id="problemas">
+  <div class="sec-hdr">
+    <div class="num c1">⚠️</div>
+    <div class="sec-hdr-txt">
+      <h2>Los 6 tipos de problemas de calidad de datos</h2>
+      <p>El vocabulario común que usa la industria antes de limpiar</p>
+    </div>
+  </div>
+
+  <div class="tw">
+    <table>
+      <tr><th>#</th><th>Problema</th><th>Ejemplo real en el dataset</th><th>¿Cómo se detecta?</th></tr>
+      <tr><td><strong>1</strong></td><td><strong>Nulos</strong></td><td><code>metodo_pago</code> con NaN en 1,500 filas</td><td><code>.isnull().sum()</code></td></tr>
+      <tr><td><strong>2</strong></td><td><strong>Tipos incorrectos</strong></td><td><code>fecha_registro</code> leída como texto en vez de datetime</td><td><code>.dtypes</code></td></tr>
+      <tr><td><strong>3</strong></td><td><strong>Outliers</strong></td><td><code>total_venta = $83,850</code> cuando el máximo real es ~$3,146</td><td>IQR, Z-score</td></tr>
+      <tr><td><strong>4</strong></td><td><strong>Inconsistencias de texto</strong></td><td>"Efectivo", "efectivo", "EFECTIVO" — tres valores que son uno solo</td><td><code>.value_counts()</code></td></tr>
+      <tr><td><strong>5</strong></td><td><strong>Duplicados</strong></td><td>Misma transacción registrada dos veces por fallo del sistema</td><td><code>.duplicated()</code></td></tr>
+      <tr><td><strong>6</strong></td><td><strong>Violaciones de dominio</strong></td><td><code>region='Loja'</code> cuando solo existen 'Costa', 'Sierra', 'Digital'</td><td><code>.isin()</code></td></tr>
+    </table>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">Practical Statistics for Data Scientists — Peter Bruce & Andrew Bruce (O'Reilly, 2ª ed. 2020)</div>
+      <div class="auth">Peter Bruce · Andrew Bruce · Peter Gedeck</div>
+      <div class="cita">"Data quality problems are ubiquitous in real-world data. Missing values, outliers, inconsistent data entries, and duplicates are the rule, not the exception. The data scientist must develop a systematic approach to identifying and addressing these problems."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 1 — AUDITORÍA
+     ============================================================ -->
+<section class="sec" id="s1">
+  <div class="sec-hdr">
+    <div class="num c1">1</div>
+    <div class="sec-hdr-txt">
+      <h2>Preparación y Carga del Dataset</h2>
+      <p>Cargar los datos correctamente y crear la copia de trabajo</p>
+    </div>
+  </div>
+
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy  <span class="kw">as</span> np
+<span class="kw">import</span> os
+
+<span class="cm"># Ruta al archivo original — SOLO LECTURA, nunca se modifica</span>
+RUTA_EXCEL = <span class="st">'/content/drive/MyDrive/MAESTRIA_BI/BIZDATA_dataset_maestro_retail.xlsx'</span>
+
+<span class="cm"># Cargar cada hoja del Excel como un DataFrame separado</span>
+fact_ventas     = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'fact_ventas'</span>)
+dim_clientes    = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_clientes'</span>)
+dim_productos   = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_productos'</span>)
+dim_sucursales  = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_sucursales'</span>)
+dim_tiempo      = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_tiempo'</span>)
+dim_proveedores = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_proveedores'</span>)
+
+<span class="cm"># ★ LA REGLA DE ORO: crear una COPIA de trabajo</span>
+<span class="cm"># fv es la copia — fact_ventas es el original intacto</span>
+fv = fact_ventas.copy()
+
+<span class="fn">print</span>(<span class="st">"✅ Dataset cargado. Trabajando sobre copia de fact_ventas."</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas: {len(fv):,} | Columnas: {fv.shape[1]}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">pd.read_excel(RUTA_EXCEL, sheet_name='fact_ventas')</span><span class="xd">Lee el archivo Excel y carga la hoja llamada 'fact_ventas' como un DataFrame de pandas. Si no especificas <code>sheet_name</code>, lee la primera hoja. Necesitas un Excel con múltiples hojas → una hoja por tabla.</span></div>
+    <div class="xl"><span class="xc0">fv = fact_ventas.copy()</span><span class="xd">Crea una copia profunda (deep copy) del DataFrame original. Cualquier cambio en <code>fv</code> NO afecta <code>fact_ventas</code>. Esto implementa la Regla de Oro del ETL.</span></div>
+    <div class="xl"><span class="xc0">fv.shape[1]</span><span class="xd"><code>.shape</code> retorna una tupla (filas, columnas). <code>shape[1]</code> accede a las columnas. <code>shape[0]</code> serían las filas.</span></div>
+  </div>
+
+  <div class="out">✅ Dataset cargado. Trabajando sobre copia de fact_ventas.
+   Filas: 50,500 | Columnas: 15</div>
+</section>
+
+<!-- 1.1 AUDITORÍA INICIAL -->
+<section class="sec" id="s1">
+  <div class="sec-hdr">
+    <div class="num c1">1.1</div>
+    <div class="sec-hdr-txt">
+      <h2>Auditoría Inicial</h2>
+      <p>Reporte de calidad completo — describe el estado, no propone soluciones</p>
+    </div>
+  </div>
+
+  <p>La auditoría es el primer paso del ETL: observar antes de actuar. Genera un reporte que describe el estado actual de los datos sin modificar nada.</p>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Antes de limpiar tu cuarto, primero lo revisas: ¿cuántos juguetes hay?, ¿cuántos están rotos?, ¿hay calcetines en el suelo? No limpias nada todavía — solo anotas lo que ves. Eso es una auditoría.</p>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">auditar_dataframe</span>(df, nombre):
+    <span class="st">"""
+    Genera un reporte de calidad completo sobre cualquier DataFrame.
+    No revela soluciones — solo describe el estado actual del dato.
+    """</span>
+    <span class="fn">print</span>(<span class="st">"=" * 60</span>)
+    <span class="fn">print</span>(f<span class="st">"  REPORTE DE AUDITORÍA — {nombre}"</span>)
+    <span class="fn">print</span>(<span class="st">"=" * 60</span>)
+    <span class="fn">print</span>(f<span class="st">"\n  Dimensiones : {df.shape[0]:,} filas × {df.shape[1]} columnas"</span>)
+    <span class="fn">print</span>(f<span class="st">"  Memoria     : {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB"</span>)
+
+    <span class="fn">print</span>(<span class="st">"\n  ── TIPOS DE DATOS ──────────────────────────────────"</span>)
+    <span class="kw">for</span> col <span class="kw">in</span> df.columns:
+        dtype  = <span class="fn">str</span>(df[col].dtype)
+        nulos  = df[col].isnull().sum()
+        pct    = nulos / <span class="fn">len</span>(df) * <span class="nm">100</span>
+        unicos = df[col].nunique()
+        flag   = <span class="st">" ⚠️"</span> <span class="kw">if</span> nulos > <span class="nm">0</span> <span class="kw">else</span> <span class="st">""</span>
+        <span class="fn">print</span>(f<span class="st">"  {col:<22} {dtype:<12} nulos: {nulos:>5} ({pct:>4.1f}%)  únicos: {unicos:>6}{flag}"</span>)
+
+    <span class="fn">print</span>(f<span class="st">"\n  ── DUPLICADOS ──────────────────────────────────────"</span>)
+    dups = df.duplicated().sum()
+    <span class="fn">print</span>(f<span class="st">"  Filas duplicadas exactas : {dups:,} ({dups/len(df)*100:.2f}%)"</span>)
+
+    <span class="fn">print</span>(f<span class="st">"\n  ── ESTADÍSTICAS NUMÉRICAS ──────────────────────────"</span>)
+    cols_num = df.select_dtypes(include=<span class="st">'number'</span>).columns
+    <span class="kw">if</span> <span class="fn">len</span>(cols_num) > <span class="nm">0</span>:
+        <span class="fn">print</span>(df[cols_num].describe().round(<span class="nm">2</span>).to_string())
+
+<span class="cm"># Ejecutar sobre la tabla principal</span>
+<span class="fn">auditar_dataframe</span>(fv, <span class="st">'fact_ventas'</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">df.memory_usage(deep=True).sum() / 1024**2</span><span class="xd"><code>.memory_usage(deep=True)</code> calcula cuánta RAM usa cada columna en bytes (deep=True para columnas de texto). Se divide entre 1024² para convertir de bytes a megabytes.</span></div>
+    <div class="xl"><span class="xc0">df[col].nunique()</span><span class="xd">Cuenta cuántos valores únicos hay en la columna (excluyendo nulos). Una columna de IDs debería tener tantos únicos como filas; una columna de categorías debería tener pocos.</span></div>
+    <div class="xl"><span class="xc0">df.duplicated().sum()</span><span class="xd">Detecta filas completamente idénticas (todas las columnas iguales) y cuenta cuántas hay. Por defecto marca como duplicada la segunda ocurrencia en adelante.</span></div>
+    <div class="xl"><span class="xc0">df.select_dtypes(include='number').columns</span><span class="xd">Selecciona solo las columnas que contienen números (int64, float64). Úsalo para aplicar estadísticas solo a columnas numéricas, no a texto.</span></div>
+    <div class="xl"><span class="xc0">df[cols_num].describe()</span><span class="xd">Calcula automáticamente: count, mean, std, min, 25%, 50%, 75%, max para cada columna numérica. Es el punto de partida para detectar outliers y rangos sospechosos.</span></div>
+  </div>
+
+  <h3>Preguntas que debes responder al ver el reporte de auditoría</h3>
+  <ul>
+    <li>¿Qué columnas tienen valores nulos? ¿Cuántos?</li>
+    <li>¿Hay duplicados? ¿Cuántos? ¿Qué porcentaje del dataset son?</li>
+    <li>¿Algún valor numérico en el .describe() parece sospechoso (ej: min negativo en ventas)?</li>
+    <li>¿Todos los tipos de datos son correctos (ej: fechas como 'object' en vez de datetime)?</li>
+  </ul>
+</section>
+
+<!-- 1.2 CATEGÓRICAS -->
+<section class="sec" id="s12">
+  <div class="sec-hdr">
+    <div class="num c1">1.2</div>
+    <div class="sec-hdr-txt">
+      <h2>Auditoría de columnas categóricas</h2>
+      <p>Detectar inconsistencias de texto que las estadísticas numéricas no pueden ver</p>
+    </div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">auditar_categoricas</span>(df, columnas):
+    <span class="st">"""
+    Muestra la distribución de frecuencias de columnas categóricas.
+    Útil para detectar inconsistencias de texto que las estadísticas
+    numéricas no pueden revelar.
+    """</span>
+    <span class="kw">for</span> col <span class="kw">in</span> columnas:
+        <span class="fn">print</span>(f<span class="st">"\n{'─'*50}"</span>)
+        <span class="fn">print</span>(f<span class="st">"  Columna: '{col}'"</span>)
+        conteo = df[col].value_counts(dropna=<span class="kw">False</span>)  <span class="cm"># incluye NaN</span>
+        <span class="kw">for</span> valor, n <span class="kw">in</span> conteo.items():
+            pct   = n / <span class="fn">len</span>(df) * <span class="nm">100</span>
+            barra = <span class="st">'█'</span> * <span class="fn">int</span>(pct / <span class="nm">2</span>)            <span class="cm"># barra visual proporcional</span>
+            label = <span class="fn">str</span>(valor) <span class="kw">if</span> pd.notna(valor) <span class="kw">else</span> <span class="st">'NaN (nulo)'</span>
+            <span class="fn">print</span>(f<span class="st">"  {label:<25} {n:>6,}  {pct:>5.1f}%  {barra}"</span>)
+
+<span class="fn">auditar_categoricas</span>(fv, [<span class="st">'canal'</span>, <span class="st">'metodo_pago'</span>, <span class="st">'devolucion'</span>])</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">value_counts(dropna=False)</span><span class="xd">Cuenta cuántas veces aparece cada valor, incluyendo los NaN. Con <code>dropna=True</code> (por defecto) los NaN se ignoran — podrías perder información crítica sobre nulos.</span></div>
+    <div class="xl"><span class="xc0">'█' * int(pct / 2)</span><span class="xd">Crea una barra visual: si el porcentaje es 40%, dibuja 20 bloques. Es una forma simple de hacer un "histograma de texto" sin necesitar gráficos.</span></div>
+    <div class="xl"><span class="xc0">str(valor) if pd.notna(valor) else 'NaN (nulo)'</span><span class="xd">Convierte el valor a texto para mostrarlo. Si el valor es NaN (nulo), muestra la etiqueta 'NaN (nulo)' en vez de 'nan' que pandas muestra por defecto.</span></div>
+  </div>
+
+  <div class="box tip">
+    <div class="bi">🔍</div>
+    <div class="bb"><strong>¿Qué buscar en la salida?</strong> Valores que deberían ser el mismo: "Efectivo" y "efectivo", "T.Debito" y "Tarjeta Debito", "App Movil" y "App Móvil". Si ves variaciones del mismo concepto, hay inconsistencias de texto que corregir en el Paso 6.</div>
+  </div>
+</section>
+
+<!-- 1.3 RANGOS -->
+<section class="sec" id="s13">
+  <div class="sec-hdr">
+    <div class="num c1">1.3</div>
+    <div class="sec-hdr-txt">
+      <h2>Auditoría de rangos numéricos</h2>
+      <p>Un dato puede ser técnicamente válido pero contextualmente imposible</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Si en tu examen sacaste "150 sobre 100", técnicamente es un número que Python puede guardar sin problema. Pero contextualmente es imposible — la nota máxima es 100. Los rangos de negocio son esas reglas que dice "esto no puede ser así aunque Python no se queje".</p>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">auditar_rangos</span>(df, columnas_reglas):
+    <span class="st">"""
+    Verifica si los valores numéricos están dentro de rangos esperados.
+    Las reglas de negocio las defines tú — no el sistema.
+
+    columnas_reglas: dict con {'columna': (min_esperado, max_esperado)}
+    """</span>
+    <span class="fn">print</span>(<span class="st">"AUDITORÍA DE RANGOS DE NEGOCIO\n"</span>)
+    <span class="kw">for</span> col, (minimo, maximo) <span class="kw">in</span> columnas_reglas.items():
+        fuera = df[(df[col] < minimo) | (df[col] > maximo)]
+        pct   = <span class="fn">len</span>(fuera) / <span class="fn">len</span>(df) * <span class="nm">100</span>
+        estado = <span class="st">"⚠️  REVISAR"</span> <span class="kw">if</span> <span class="fn">len</span>(fuera) > <span class="nm">0</span> <span class="kw">else</span> <span class="st">"✅ OK"</span>
+        <span class="fn">print</span>(f<span class="st">"  {col:<22} rango esperado [{minimo:>8,.0f} – {maximo:>10,.0f}]"</span>)
+        <span class="fn">print</span>(f<span class="st">"  {'':22} fuera de rango: {len(fuera):>6,} filas ({pct:.2f}%)  {estado}"</span>)
+        <span class="kw">if</span> <span class="fn">len</span>(fuera) > <span class="nm">0</span>:
+            <span class="fn">print</span>(f<span class="st">"  {'':22} max encontrado: {df[col].max():>10,.2f}"</span>)
+
+<span class="cm"># Reglas de negocio para BIZDATA Retail</span>
+reglas = {
+    <span class="st">'cantidad'</span>        : (<span class="nm">1</span>,    <span class="nm">20</span>),      <span class="cm"># nadie compra más de 20 unidades</span>
+    <span class="st">'precio_unitario'</span> : (<span class="nm">0.50</span>, <span class="nm">1500</span>),   <span class="cm"># precios razonables para retail</span>
+    <span class="st">'descuento_pct'</span>   : (<span class="nm">0</span>,    <span class="nm">0.50</span>),   <span class="cm"># descuentos del 0% al 50%</span>
+    <span class="st">'total_venta'</span>     : (<span class="nm">0.50</span>, <span class="nm">5000</span>),   <span class="cm"># venta mínima 50 ctvs, máxima $5,000</span>
+    <span class="st">'costo_total'</span>     : (<span class="nm">0.50</span>, <span class="nm">4000</span>),
+    <span class="st">'margen_usd'</span>      : (<span class="nm">-500</span>, <span class="nm">3000</span>),   <span class="cm"># puede ser negativo (devoluciones)</span>
+}
+
+<span class="fn">auditar_rangos</span>(fv, reglas)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fuera = df[(df[col] &lt; minimo) | (df[col] &gt; maximo)]</span><span class="xd">Filtra las filas donde el valor está por DEBAJO del mínimo O por ENCIMA del máximo. El símbolo | significa "o" en Python para máscaras booleanas.</span></div>
+    <div class="xl"><span class="xc0">columnas_reglas: dict con {'columna': (min, max)}</span><span class="xd">Un diccionario donde la clave es el nombre de la columna y el valor es una tupla con los límites. Defines las reglas TÚ según el contexto del negocio — pandas no puede saber que nadie compra 200 camisetas de una vez.</span></div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">Data Quality: The Accuracy Dimension — Jack E. Olson (Morgan Kaufmann, 2003)</div>
+      <div class="auth">Jack E. Olson</div>
+      <div class="cita">"Business rules are constraints that reflect the policies and procedures of an organization. A value that violates a business rule may be technically valid but semantically incorrect. Detecting these violations requires domain knowledge that automated tools cannot provide."</div>
+    </div>
+  </div>
+</section>
+
+<!-- 1.4 DIMENSIONES -->
+<section class="sec" id="s14">
+  <div class="sec-hdr">
+    <div class="num c1">1.4</div>
+    <div class="sec-hdr-txt">
+      <h2>Auditoría de todas las dimensiones</h2>
+      <p>No solo fact_ventas — todas las tablas del esquema estrella</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Diccionario: nombre → DataFrame</span>
+tablas = {
+    <span class="st">'dim_clientes'</span>    : dim_clientes,
+    <span class="st">'dim_productos'</span>   : dim_productos,
+    <span class="st">'dim_sucursales'</span>  : dim_sucursales,
+    <span class="st">'dim_tiempo'</span>      : dim_tiempo,
+    <span class="st">'dim_proveedores'</span> : dim_proveedores,
+}
+
+<span class="cm"># Aplicar la misma función auditar_dataframe a cada tabla</span>
+<span class="kw">for</span> nombre, df <span class="kw">in</span> tablas.items():
+    <span class="fn">auditar_dataframe</span>(df, nombre)
+    <span class="fn">print</span>(<span class="st">"\n"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">for nombre, df in tablas.items()</span><span class="xd">Itera sobre cada par (nombre, DataFrame) del diccionario. <code>.items()</code> retorna pares (clave, valor). Así aplicamos la misma función a todas las tablas sin repetir código.</span></div>
+  </div>
+
+  <div class="box info">
+    <div class="bi">💡</div>
+    <div class="bb"><strong>¿Por qué auditar las dimensiones también?</strong> Los problemas de calidad no solo están en la tabla de hechos. Si <code>dim_sucursales</code> tiene una región inválida ("Loja" en vez de "Sierra"), ese error se propagará al dataset final cuando hagas el JOIN. Es mejor detectarlo ahora.</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 2 — TIPOS DE DATOS
+     ============================================================ -->
+<section class="sec" id="s2t">
+  <div class="sec-hdr">
+    <div class="num c2">2</div>
+    <div class="sec-hdr-txt">
+      <h2>2. Tipos de Datos y Corrección</h2>
+      <p>Pandas asigna tipos automáticamente — pero "automático" ≠ "correcto"</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Imagina que tienes una caja para guardar lápices y otra para guardar gomas. Si alguien mete una goma en la caja de lápices, físicamente cabe — pero cuando buscas gomas, no la vas a encontrar ahí. Los tipos de datos son esas cajas: si guardas una fecha como texto, Python no puede hacer cálculos con ella ("¿cuántos días han pasado?"), aunque "visualmente" se ve igual.</p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <tr><th>Tipo pandas</th><th>¿Para qué sirve?</th><th>Equivalente humano</th></tr>
+      <tr><td><code>int64</code></td><td>Números enteros (sin decimales)</td><td>1, 42, -5, 1000</td></tr>
+      <tr><td><code>float64</code></td><td>Números con decimales</td><td>3.14, 99.99, -0.5</td></tr>
+      <tr><td><code>object</code></td><td>Texto (strings)</td><td>"Hola", "E-Commerce", "2024-01-15"</td></tr>
+      <tr><td><code>datetime64</code></td><td>Fechas y horas con soporte de operaciones temporales</td><td>2024-01-15 14:30:00</td></tr>
+      <tr><td><code>bool</code></td><td>Verdadero / Falso</td><td>True / False</td></tr>
+      <tr><td><code>category</code></td><td>Texto con pocos valores únicos (más eficiente en memoria)</td><td>"Costa", "Sierra", "Digital"</td></tr>
+    </table>
+  </div>
+
+<pre><span class="cm"># Diagnóstico de tipos actuales — comparar con lo esperado</span>
+tipos_esperados = {
+    <span class="st">'id_venta'</span>        : <span class="st">'object'</span>,   <span class="cm"># ID como texto (puede tener letras)</span>
+    <span class="st">'id_tiempo'</span>       : <span class="st">'int64'</span>,    <span class="cm"># número entero</span>
+    <span class="st">'id_cliente'</span>      : <span class="st">'int64'</span>,
+    <span class="st">'id_producto'</span>     : <span class="st">'int64'</span>,
+    <span class="st">'id_sucursal'</span>     : <span class="st">'int64'</span>,
+    <span class="st">'canal'</span>           : <span class="st">'object'</span>,   <span class="cm"># texto</span>
+    <span class="st">'cantidad'</span>        : <span class="st">'int64'</span>,    <span class="cm"># entero (no puedes vender 2.5 camisetas)</span>
+    <span class="st">'precio_unitario'</span> : <span class="st">'float64'</span>, <span class="cm"># decimal (puede ser $9.99)</span>
+    <span class="st">'descuento_pct'</span>   : <span class="st">'float64'</span>,
+    <span class="st">'precio_final'</span>    : <span class="st">'float64'</span>,
+    <span class="st">'total_venta'</span>     : <span class="st">'float64'</span>,
+    <span class="st">'costo_total'</span>     : <span class="st">'float64'</span>,
+    <span class="st">'margen_usd'</span>      : <span class="st">'float64'</span>,
+    <span class="st">'metodo_pago'</span>     : <span class="st">'object'</span>,
+    <span class="st">'devolucion'</span>      : <span class="st">'int64'</span>,    <span class="cm"># 0 o 1 (binario)</span>
+}
+
+<span class="fn">print</span>(f<span class="st">"{'Columna':<22} {'Tipo actual':<14} {'¿Correcto?'}"</span>)
+<span class="fn">print</span>(<span class="st">"─" * 55</span>)
+
+<span class="kw">for</span> col, tipo_esp <span class="kw">in</span> tipos_esperados.items():
+    tipo_actual = <span class="fn">str</span>(fv[col].dtype)
+    ok = <span class="st">"✅"</span> <span class="kw">if</span> tipo_actual == tipo_esp <span class="kw">else</span> <span class="st">"⚠️  CORREGIR"</span>
+    <span class="fn">print</span>(f<span class="st">"  {col:<22} {tipo_actual:<14} {ok}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">str(fv[col].dtype)</span><span class="xd">Convierte el tipo de la columna a texto. <code>.dtype</code> retorna un objeto de tipo NumPy que al compararlo con un string necesitas convertir primero con str().</span></div>
+  </div>
+
+<pre><span class="cm"># Corrección de tipos — cantidad y devolucion deben ser int64</span>
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'cantidad'</span>, <span class="st">'devolucion'</span>]:
+    nulos = fv[col].isnull().sum()
+    <span class="kw">if</span> nulos == <span class="nm">0</span>:
+        <span class="cm"># Solo se puede convertir a int64 si no hay nulos</span>
+        <span class="cm"># int64 NO acepta NaN — float64 sí lo acepta</span>
+        fv[col] = fv[col].astype(<span class="st">'int64'</span>)
+        <span class="fn">print</span>(f<span class="st">"✅ {col} convertido a int64"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"⚠️  {col} tiene {nulos} nulos — se trata primero"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.astype('int64')</span><span class="xd">Convierte la columna al tipo especificado. Lanzará un error si hay NaN en la columna (int64 no puede almacenar nulos). Por eso se verifica primero con <code>.isnull().sum()</code>.</span></div>
+  </div>
+
+  <div class="box warn">
+    <div class="bi">⚠️</div>
+    <div class="bb"><strong>Trampa común:</strong> Pandas lee muchas columnas enteras como <code>float64</code> cuando hay algún nulo en ellas, porque <code>int64</code> no puede almacenar NaN. Después de tratar los nulos, convierte esas columnas a <code>int64</code> correctamente.</div>
+  </div>
+
+  <div class="box tip">
+    <div class="bi">💡</div>
+    <div class="bb">
+      <strong>Columnas category — ahorro de memoria:</strong>
+      <pre style="margin-top:8px;font-size:.78rem;">cols_category = ['canal', 'metodo_pago']
+<span class="kw">for</span> col <span class="kw">in</span> cols_category:
+    n_unique = fv[col].nunique()
+    <span class="kw">if</span> n_unique < <span class="nm">20</span>:   <span class="cm"># menos de 20 valores únicos → category</span>
+        fv[col] = fv[col].astype(<span class="st">'category'</span>)</pre>
+      El tipo <code>category</code> guarda internamente los strings como números enteros + una tabla de referencia. Puede reducir el uso de memoria hasta un 90% en columnas con pocos valores únicos.
+    </div>
+  </div>
+</section>
+
+<!-- 2.2 FECHAS -->
+<section class="sec" id="s22">
+  <div class="sec-hdr">
+    <div class="num c2">2.2</div>
+    <div class="sec-hdr-txt">
+      <h2>Corrección de fechas</h2>
+      <p>Convertir strings a datetime64 para operar temporalmente</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Diagnóstico: ver cómo llegó la columna fecha</span>
+<span class="fn">print</span>(f<span class="st">"Tipo actual de 'fecha' en dim_tiempo: {dim_tiempo['fecha'].dtype}"</span>)
+<span class="fn">print</span>(f<span class="st">"Ejemplo de valores: {dim_tiempo['fecha'].head(3).tolist()}"</span>)
+
+<span class="cm"># Resultado típico: dtype = object (texto), valores = '2022-01-01', '2022-01-02'...</span>
+<span class="cm"># Pandas no puede calcular "diferencia en días" si la fecha es un string</span></pre>
+
+<pre><span class="cm"># Conversión a datetime64</span>
+dim_tiempo[<span class="st">'fecha'</span>] = pd.to_datetime(dim_tiempo[<span class="st">'fecha'</span>], format=<span class="st">'%Y-%m-%d'</span>)
+
+<span class="cm"># Verificar y extraer componentes (solo posible con datetime64)</span>
+<span class="fn">print</span>(f<span class="st">"Tipo después de conversión: {dim_tiempo['fecha'].dtype}"</span>)
+<span class="fn">print</span>(f<span class="st">"Primer día  : {dim_tiempo['fecha'].min().date()}"</span>)
+<span class="fn">print</span>(f<span class="st">"Último día  : {dim_tiempo['fecha'].max().date()}"</span>)
+<span class="fn">print</span>(f<span class="st">"Rango total : {(dim_tiempo['fecha'].max() - dim_tiempo['fecha'].min()).days} días"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">pd.to_datetime(serie, format='%Y-%m-%d')</span><span class="xd">Convierte una columna de texto a datetime64. El parámetro <code>format</code> le dice a pandas cómo interpretar el texto: %Y=año 4 dígitos, %m=mes 2 dígitos, %d=día 2 dígitos. Si no lo especificas, pandas intenta inferirlo (más lento y propenso a errores).</span></div>
+    <div class="xl"><span class="xc0">(fecha_max - fecha_min).days</span><span class="xd">Resta dos fechas datetime — Python retorna un objeto timedelta. El atributo .days extrae la diferencia en días. Esto es IMPOSIBLE si la columna es tipo object (texto).</span></div>
+  </div>
+
+<pre><span class="cm"># Función para detectar fechas mal formadas antes de convertir</span>
+<span class="kw">def</span> <span class="fn">detectar_fechas_invalidas</span>(serie, formato=<span class="st">'%Y-%m-%d'</span>):
+    <span class="st">"""Intenta parsear cada valor. Los que fallen son fechas inválidas."""</span>
+    invalidas = []
+    <span class="kw">for</span> idx, val <span class="kw">in</span> serie.items():
+        <span class="kw">try</span>:
+            pd.to_datetime(val, format=formato)
+        <span class="kw">except</span> <span class="fn">Exception</span>:
+            invalidas.append({<span class="st">'indice'</span>: idx, <span class="st">'valor'</span>: val})
+    <span class="kw">return</span> pd.DataFrame(invalidas)
+
+problemas_fecha = <span class="fn">detectar_fechas_invalidas</span>(dim_clientes[<span class="st">'fecha_registro'</span>].dropna())
+
+<span class="kw">if</span> problemas_fecha.empty:
+    <span class="fn">print</span>(<span class="st">"✅ No hay fechas con formato inválido."</span>)
+    dim_clientes[<span class="st">'fecha_registro'</span>] = pd.to_datetime(
+        dim_clientes[<span class="st">'fecha_registro'</span>], format=<span class="st">'%Y-%m-%d'</span>
+    )
+<span class="kw">else</span>:
+    <span class="fn">print</span>(f<span class="st">"⚠️  Fechas inválidas encontradas:"</span>)
+    <span class="fn">print</span>(problemas_fecha)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">try: pd.to_datetime(val) / except Exception</span><span class="xd">Bloque try/except: intenta convertir cada valor; si falla (porque el formato es incorrecto), no rompe el programa sino que guarda el valor problemático. Así puedes encontrar los "malos" sin que el script entero se caiga.</span></div>
+  </div>
+</section>
+
+<!-- 2.3 STRINGS -->
+<section class="sec" id="s23">
+  <div class="sec-hdr">
+    <div class="num c2">2.3</div>
+    <div class="sec-hdr-txt">
+      <h2>Estandarización preliminar de strings</h2>
+      <p>Capitalización uniforme como base para la limpieza profunda</p>
+    </div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">estandarizar_capitalización</span>(df, columnas):
+    <span class="st">"""
+    Aplica .str.strip() y .str.title() a columnas de texto.
+    - strip(): elimina espacios al inicio y al final
+    - title(): primera letra de cada palabra en mayúscula
+    """</span>
+    <span class="kw">for</span> col <span class="kw">in</span> columnas:
+        original = df[col].copy()
+        df[col]  = df[col].str.strip().str.title()
+        cambios  = (original != df[col]).sum()
+        <span class="fn">print</span>(f<span class="st">"  {col:<20} → {cambios:>4} valores modificados"</span>)
+
+<span class="fn">estandarizar_capitalización</span>(fv, [<span class="st">'canal'</span>, <span class="st">'metodo_pago'</span>])</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.str.strip()</span><span class="xd">Elimina espacios en blanco, tabs o saltos de línea al inicio y al final del texto. " Efectivo " → "Efectivo". Un espacio invisible puede hacer que dos valores iguales no coincidan en un JOIN.</span></div>
+    <div class="xl"><span class="xc0">.str.title()</span><span class="xd">Convierte la primera letra de cada palabra a mayúscula y el resto a minúscula. "EFECTIVO" → "Efectivo", "efectivo" → "Efectivo". Esto unifica la capitalización, pero no soluciona sinónimos como "T.Debito" vs "Tarjeta Débito".</span></div>
+    <div class="xl"><span class="xc0">(original != df[col]).sum()</span><span class="xd">Compara la columna original con la columna modificada elemento por elemento (True donde cambiaron), y suma los True para contar cuántas filas fueron modificadas.</span></div>
+  </div>
+
+  <div class="box warn">
+    <div class="bi">⚠️</div>
+    <div class="bb"><strong>Límite de .str.title():</strong> Esta corrección es superficial. "T.Debito" y "Tarjeta Debito" siguen siendo distintos después de .title(). La estandarización profunda (con mapas de equivalencias) ocurre en la Sesión 3, Paso 6.</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 3 — NULOS
+     ============================================================ -->
+<section class="sec" id="s3">
+  <div class="sec-hdr">
+    <div class="num c3">3</div>
+    <div class="sec-hdr-txt">
+      <h2>3. Tratamiento de Valores Nulos</h2>
+      <p>Los 3 mecanismos de ausencia: MCAR, MAR, MNAR</p>
+    </div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">Statistical Analysis with Missing Data — Little & Rubin (Wiley, 3ª ed. 2019)</div>
+      <div class="auth">Roderick J.A. Little · Donald B. Rubin</div>
+      <div class="cita">"The mechanism by which data come to be missing is a crucial factor in choosing the right analysis. Missing data that are Missing Completely At Random (MCAR), Missing At Random (MAR), or Missing Not At Random (MNAR) require fundamentally different treatments."</div>
+    </div>
+  </div>
+
+  <p>La estadística moderna clasifica los datos faltantes en tres categorías. <strong>La decisión de qué hacer con un nulo depende de por qué existe ese nulo.</strong></p>
+
+  <div class="g3">
+    <div class="card" style="border-top:4px solid #22C55E;">
+      <div class="ic">🎲</div>
+      <strong>MCAR — Missing Completely At Random</strong>
+      <p>El dato falta por causas totalmente aleatorias, sin relación con ninguna variable. Puedes imputar o eliminar sin sesgar el análisis.</p>
+      <p style="margin-top:8px;font-size:.8rem;color:#059669;"><strong>Ejemplo:</strong> Corte de luz de 2 minutos → 15 transacciones sin método de pago al azar.</p>
+    </div>
+    <div class="card" style="border-top:4px solid #F59E0B;">
+      <div class="ic">🔗</div>
+      <strong>MAR — Missing At Random</strong>
+      <p>El dato falta por razones relacionadas con otras variables observables, no con el valor faltante en sí.</p>
+      <p style="margin-top:8px;font-size:.8rem;color:#D97706;"><strong>Ejemplo:</strong> Clientes que pagan en efectivo tienden a no registrar el canal de venta.</p>
+    </div>
+    <div class="card" style="border-top:4px solid #EF4444;">
+      <div class="ic">🚨</div>
+      <strong>MNAR — Missing Not At Random</strong>
+      <p>El dato falta por razones relacionadas con el propio valor no observado. El más peligroso — requiere criterio de negocio.</p>
+      <p style="margin-top:8px;font-size:.8rem;color:#DC2626;"><strong>Ejemplo:</strong> Transacciones de alto monto deliberadamente sin método de pago.</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p><strong>MCAR:</strong> Tu perro comió aleatoriamente 5 hojas de tu tarea — no importa cuáles, fue al azar.<br>
+    <strong>MAR:</strong> Tu perro solo come las hojas de matemáticas porque le gusta ese papel. Las hojas faltantes son predecibles basándote en la materia.<br>
+    <strong>MNAR:</strong> Tu perro se come las hojas donde sacaste notas muy malas, específicamente esas. Las hojas con malas notas desaparecen — no puedes saber lo malas que eran porque ya no existen.</p>
+  </div>
+</section>
+
+<!-- 3.2 TÉCNICAS -->
+<section class="sec" id="s32">
+  <div class="sec-hdr">
+    <div class="num c3">3.2</div>
+    <div class="sec-hdr-txt">
+      <h2>Técnicas de imputación</h2>
+      <p>Cómo rellenar nulos según el tipo de variable</p>
+    </div>
+  </div>
+
+  <div class="tw">
+    <table>
+      <tr><th>Técnica</th><th>Cuándo usar</th><th>Tipo variable</th><th>Riesgo</th></tr>
+      <tr><td><strong>Moda</strong></td><td>Distribución MCAR en categóricas</td><td>Categórica (texto)</td><td><span class="bg">Bajo</span></td></tr>
+      <tr><td><strong>Media</strong></td><td>Distribución simétrica, sin outliers</td><td>Numérica</td><td><span class="by">Medio — sensible a outliers</span></td></tr>
+      <tr><td><strong>Mediana</strong></td><td>Distribución asimétrica o con outliers</td><td>Numérica</td><td><span class="bg">Bajo — robusta</span></td></tr>
+      <tr><td><strong>"Desconocido"</strong></td><td>No se puede inferir el valor</td><td>Categórica</td><td><span class="bg">Bajo</span></td></tr>
+      <tr><td><strong>Imputación condicional</strong></td><td>MAR — el nulo depende de otro grupo</td><td>Ambas</td><td><span class="bg">Bajo si el grupo es correcto</span></td></tr>
+      <tr><td><strong>Eliminación</strong></td><td>MCAR con pocos nulos (&lt;5%)</td><td>Ambas</td><td><span class="br">Alto si hay muchos nulos</span></td></tr>
+    </table>
+  </div>
+
+  <div class="box danger">
+    <div class="bi">⚠️</div>
+    <div class="bb"><strong>Advertencia estadística del notebook:</strong> "Imputar con la media en presencia de outliers introduce sesgo. Siempre verifica la distribución antes de elegir la técnica." Si el sesgo (skewness) es mayor a 0.5 en valor absoluto → usa mediana, no media.</div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">The Elements of Statistical Learning — Hastie, Tibshirani & Friedman (Springer, 2ª ed. 2009)</div>
+      <div class="auth">Trevor Hastie · Robert Tibshirani · Jerome Friedman</div>
+      <div class="cita">"The choice of imputation strategy should be guided by the missing data mechanism. Mean imputation ignores the uncertainty about the missing values and underestimates the variance of the variable being imputed."</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3.3 DIAGNÓSTICO -->
+<section class="sec" id="s33">
+  <div class="sec-hdr">
+    <div class="num c3">3.3</div>
+    <div class="sec-hdr-txt">
+      <h2>Diagnóstico de nulos en nuestro dataset</h2>
+      <p>Entender el patrón antes de decidir cómo imputar</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Reporte de nulos — cuántos hay y dónde</span>
+nulos      = fv.isnull().sum()
+porcentaje = (nulos / <span class="fn">len</span>(fv) * <span class="nm">100</span>).round(<span class="nm">3</span>)
+tipo       = fv.dtypes
+
+reporte_nulos = pd.DataFrame({
+    <span class="st">'Nulos'</span>        : nulos,
+    <span class="st">'Porcentaje %'</span> : porcentaje,
+    <span class="st">'Tipo dato'</span>    : tipo,
+}).query(<span class="st">'Nulos > 0'</span>).sort_values(<span class="st">'Nulos'</span>, ascending=<span class="kw">False</span>)
+
+<span class="fn">print</span>(reporte_nulos)
+<span class="fn">print</span>(f<span class="st">"\nTotal filas con al menos un nulo: {fv.isnull().any(axis=1).sum():,}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.query('Nulos > 0')</span><span class="xd">Filtra el DataFrame para mostrar solo las columnas que tienen al menos un nulo. Es equivalente a <code>df[df['Nulos'] > 0]</code> pero más legible para filtros simples.</span></div>
+    <div class="xl"><span class="xc0">fv.isnull().any(axis=1).sum()</span><span class="xd"><code>.isnull()</code> crea un DataFrame de True/False. <code>.any(axis=1)</code> retorna True si hay algún True en esa fila (axis=1 = por filas). <code>.sum()</code> cuenta las filas con al menos un nulo.</span></div>
+  </div>
+
+<pre><span class="cm"># ¿Los nulos en 'metodo_pago' se concentran en algún canal? → prueba de MAR</span>
+patron_nulos = (
+    fv.groupby(<span class="st">'canal'</span>, observed=<span class="kw">False</span>)[<span class="st">'metodo_pago'</span>]
+    .apply(<span class="kw">lambda</span> x: x.isnull().sum())
+    .reset_index()
+    .rename(columns={<span class="st">'metodo_pago'</span>: <span class="st">'nulos_metodo_pago'</span>})
+)
+patron_nulos[<span class="st">'total_canal'</span>] = fv.groupby(<span class="st">'canal'</span>, observed=<span class="kw">False</span>).size().values
+patron_nulos[<span class="st">'pct_nulos'</span>]   = (patron_nulos[<span class="st">'nulos_metodo_pago'</span>] /
+                                patron_nulos[<span class="st">'total_canal'</span>] * <span class="nm">100</span>).round(<span class="nm">2</span>)
+<span class="fn">print</span>(patron_nulos)
+<span class="fn">print</span>(<span class="st">"\n💬 ¿Qué concluyes? ¿Es MCAR, MAR o MNAR?"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fv.groupby('canal')['metodo_pago'].apply(lambda x: x.isnull().sum())</span><span class="xd">Agrupa por canal y dentro de cada grupo cuenta los nulos de metodo_pago. Si el porcentaje de nulos es similar en todos los canales → MCAR. Si se concentra en un canal específico → MAR.</span></div>
+    <div class="xl"><span class="xc0">observed=False</span><span class="xd">Cuando una columna tiene tipo 'category', <code>observed=False</code> incluye en el groupby todas las categorías aunque no aparezcan en los datos. Evita que el resultado omita categorías vacías.</span></div>
+  </div>
+</section>
+
+<!-- 3 IMPUTACIÓN -->
+<section class="sec" id="s3t">
+  <div class="sec-hdr">
+    <div class="num c3">3.4</div>
+    <div class="sec-hdr-txt">
+      <h2>Imputación — tratamiento de cada columna con nulos</h2>
+      <p>Código completo de imputación con la lógica detrás de cada decisión</p>
+    </div>
+  </div>
+
+  <h4>Columna metodo_pago — imputación con MODA (categórica)</h4>
+<pre><span class="cm"># Paso 1: Identificar la moda (valor más frecuente)</span>
+moda_metodo = fv[<span class="st">'metodo_pago'</span>].mode()[<span class="nm">0</span>]
+<span class="fn">print</span>(f<span class="st">"Moda de 'metodo_pago': '{moda_metodo}'"</span>)
+<span class="fn">print</span>(f<span class="st">"Nulos antes: {fv['metodo_pago'].isnull().sum():,}"</span>)
+
+<span class="cm"># Paso 2: Imputar — reemplazar NaN con la moda</span>
+fv[<span class="st">'metodo_pago'</span>] = fv[<span class="st">'metodo_pago'</span>].fillna(moda_metodo)
+
+<span class="cm"># Paso 3: Verificar que desaparecieron los nulos</span>
+<span class="fn">print</span>(f<span class="st">"Nulos después: {fv['metodo_pago'].isnull().sum():,}"</span>)
+<span class="fn">print</span>(<span class="st">"✅ Imputación completada."</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fv['metodo_pago'].mode()[0]</span><span class="xd"><code>.mode()</code> retorna una Serie con los valores más frecuentes (puede haber empate). El <code>[0]</code> toma el primero. Para columnas categóricas la moda es la técnica estadísticamente correcta.</span></div>
+    <div class="xl"><span class="xc0">.fillna(moda_metodo)</span><span class="xd">Reemplaza todos los NaN con el valor especificado. Solo afecta los NaN — los demás valores no se tocan.</span></div>
+  </div>
+
+  <h4>Columna descuento_pct — ¿media o mediana? (numérica)</h4>
+<pre><span class="cm"># Paso 1: Analizar la distribución para elegir la técnica correcta</span>
+desc_sin_nulos = fv[<span class="st">'descuento_pct'</span>].dropna()
+
+<span class="fn">print</span>(f<span class="st">"Media   : {desc_sin_nulos.mean():.4f}"</span>)
+<span class="fn">print</span>(f<span class="st">"Mediana : {desc_sin_nulos.median():.4f}"</span>)
+<span class="fn">print</span>(f<span class="st">"Sesgo   : {desc_sin_nulos.skew():.4f}"</span>)
+
+<span class="cm"># Si |sesgo| > 0.5 → distribución asimétrica → usar MEDIANA</span>
+<span class="kw">if</span> <span class="fn">abs</span>(desc_sin_nulos.skew()) > <span class="nm">0.5</span>:
+    <span class="fn">print</span>(<span class="st">"⚠️  Distribución asimétrica → usar MEDIANA"</span>)
+    valor_imputacion = desc_sin_nulos.median()
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"✅ Distribución simétrica → se puede usar MEDIA"</span>)
+    valor_imputacion = desc_sin_nulos.mean()
+
+<span class="cm"># Paso 2: Imputar</span>
+fv[<span class="st">'descuento_pct'</span>] = fv[<span class="st">'descuento_pct'</span>].fillna(valor_imputacion)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.skew()</span><span class="xd">Calcula el sesgo (asimetría) de la distribución. 0 = distribución perfectamente simétrica. Positivo = cola larga hacia la derecha (outliers altos). Negativo = cola izquierda. Si |skew| &gt; 0.5, la media está distorsionada por los extremos y la mediana es más robusta.</span></div>
+    <div class="xl"><span class="xc0">.median()</span><span class="xd">La mediana es el valor central cuando los datos están ordenados. No se ve afectada por outliers. Si tienes valores como [1, 2, 3, 4, 100], la mediana es 3 pero la media es 22.</span></div>
+  </div>
+
+  <h4>Verificación final — dataset sin nulos</h4>
+<pre><span class="cm"># Confirmar que no quedan nulos en todo el dataset</span>
+nulos_restantes = fv.isnull().sum().sum()
+
+<span class="kw">if</span> nulos_restantes == <span class="nm">0</span>:
+    <span class="fn">print</span>(<span class="st">"✅ fact_ventas no tiene valores nulos."</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(f<span class="st">"⚠️  Quedan {nulos_restantes:,} nulos sin tratar:"</span>)
+    <span class="fn">print</span>(fv.isnull().sum()[fv.isnull().sum() > <span class="nm">0</span>])</pre>
+</section>
+
+<!-- CHECKPOINT -->
+<section class="sec" id="checkpoint">
+  <div class="sec-hdr">
+    <div class="num c3">💾</div>
+    <div class="sec-hdr-txt">
+      <h2>Guardar Checkpoint — fin de la Sesión 2</h2>
+      <p>El resultado de la Sesión 2 es el punto de partida de la Sesión 3</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Crear carpeta de outputs si no existe</span>
+RUTA_OUTPUTS = <span class="st">'/content/drive/MyDrive/MAESTRIA_BI/outputs/'</span>
+os.makedirs(RUTA_OUTPUTS, exist_ok=<span class="kw">True</span>)
+
+<span class="cm"># Guardar el dataset con tipos corregidos y nulos tratados</span>
+fv.to_excel(RUTA_OUTPUTS + <span class="st">'fv_checkpoint_nulos.xlsx'</span>, index=<span class="kw">False</span>)
+
+<span class="fn">print</span>(<span class="st">"💾 Checkpoint guardado: fv_checkpoint_nulos.xlsx"</span>)
+<span class="fn">print</span>(f<span class="st">"   Estado: tipos corregidos + nulos tratados"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas : {len(fv):,}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">os.makedirs(RUTA_OUTPUTS, exist_ok=True)</span><span class="xd">Crea la carpeta si no existe. Con <code>exist_ok=True</code> no lanza error si la carpeta ya existe. Sin esta línea, el siguiente <code>.to_excel()</code> fallaría si la carpeta no existe.</span></div>
+    <div class="xl"><span class="xc0">.to_excel(..., index=False)</span><span class="xd">Guarda el DataFrame como archivo Excel. Con <code>index=False</code> no guarda la columna del índice de pandas (0, 1, 2...) que no tiene valor de negocio en el archivo.</span></div>
+  </div>
+
+  <div class="box ok">
+    <div class="bi">✅</div>
+    <div class="bb">
+      <strong>Estado al final de la Sesión 2:</strong>
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li>✅ Tipos de datos corregidos (int64, float64, datetime64)</li>
+        <li>✅ Fechas convertidas a datetime64</li>
+        <li>✅ Capitalización estandarizada superficialmente</li>
+        <li>✅ Nulos imputados con moda/mediana según distribución</li>
+        <li>⏳ Pendiente (Sesión 3): Outliers, texto profundo, duplicados, integridad</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- ============================================================
+     SESIÓN 3
+     ============================================================ -->
+<div class="band band-s3">🔧 SESIÓN 3 — Segunda parte del ETL</div>
+
+<div class="wrap">
+
+<!-- CARGA S3 -->
+<section class="sec" id="carga-s3">
+  <div class="sec-hdr">
+    <div class="num c5">📂</div>
+    <div class="sec-hdr-txt">
+      <h2>Carga del avance de la Sesión 2</h2>
+      <p>Retomamos el checkpoint donde lo dejamos</p>
+    </div>
+  </div>
+
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy  <span class="kw">as</span> np
+<span class="kw">import</span> plotly.express <span class="kw">as</span> px
+<span class="kw">import</span> plotly.graph_objects <span class="kw">as</span> go
+
+RUTA_EXCEL = <span class="st">'BIZDATA_dataset_maestro_retail.xlsx'</span>
+
+<span class="cm"># Cargar el checkpoint guardado al final de la Sesión 2</span>
+fv = pd.read_excel(<span class="st">'fv_checkpoint_nulos.xlsx'</span>)
+
+<span class="cm"># Recargar dimensiones desde el original (ya limpias de la S2)</span>
+dim_clientes    = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_clientes'</span>)
+dim_productos   = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_productos'</span>)
+dim_sucursales  = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_sucursales'</span>)
+dim_tiempo      = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_tiempo'</span>)
+dim_proveedores = pd.read_excel(RUTA_EXCEL, sheet_name=<span class="st">'dim_proveedores'</span>)
+
+<span class="fn">print</span>(f<span class="st">"✅ Dataset cargado desde Sesión 2"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas: {len(fv):,} | Nulos: {fv.isnull().sum().sum()}"</span>)</pre>
+
+  <div class="out">✅ Dataset cargado desde Sesión 2
+   Filas: 50,500 | Nulos: 0</div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 4 — OUTLIERS
+     ============================================================ -->
+<section class="sec" id="s4">
+  <div class="sec-hdr">
+    <div class="num c4">4</div>
+    <div class="sec-hdr-txt">
+      <h2>4. Outliers / Valores Atípicos</h2>
+      <p>4.1 — Qué son · 4.2 — Métodos · 4.3 — Impacto real en el dataset</p>
+    </div>
+  </div>
+
+  <p>Un <strong>outlier</strong> (valor atípico) es una observación que se aleja significativamente del resto. Hay dos tipos fundamentales que debes distinguir antes de actuar:</p>
+
+  <div class="g2">
+    <div class="card" style="border-left:4px solid #EF4444;">
+      <div class="ic">🐛</div>
+      <strong>Outlier por Error</strong>
+      <p>Es un error de captura, sistema o proceso. El dato está mal desde el origen.</p>
+      <p style="margin-top:8px;font-size:.83rem;color:#DC2626;"><strong>Ejemplo en el dataset:</strong> <code>total_venta = $83,850</code> cuando el máximo real es ~$3,146. El sistema multiplicó el valor por 8-15x accidentalmente.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #22C55E;">
+      <div class="ic">🦄</div>
+      <strong>Outlier Real (evento genuino)</strong>
+      <p>El dato es correcto — ese evento fue inusualmente extremo pero ocurrió.</p>
+      <p style="margin-top:8px;font-size:.83rem;color:#059669;"><strong>Ejemplo:</strong> Una empresa compró 200 unidades en una sola orden corporativa. Raro, pero real.</p>
+    </div>
+  </div>
+
+  <div class="box danger">
+    <div class="bi">🚨</div>
+    <div class="bb"><strong>Regla crítica del notebook:</strong> "Nunca elimines un outlier sin primero determinar si es un error o un evento real. Eliminar eventos reales extremos sesga el análisis y oculta información valiosa de negocio."</div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">Exploratory Data Analysis — John W. Tukey (Addison-Wesley, 1977)</div>
+      <div class="auth">John W. Tukey · Estadístico de Princeton, Bell Labs</div>
+      <div class="cita">"Far-out values — those beyond the inner fences — are to be carefully examined as they may reveal important aspects of the data or indicate errors. The box plot provides a robust summary of the data's distribution while making outliers visible."</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.2 MÉTODOS -->
+<section class="sec" id="s42">
+  <div class="sec-hdr">
+    <div class="num c4">4.2</div>
+    <div class="sec-hdr-txt">
+      <h2>Métodos de detección de outliers</h2>
+      <p>IQR de Tukey y Z-Score — los dos métodos del curso</p>
+    </div>
+  </div>
+
+  <h3>Método 1 — Regla IQR (Criterio de Tukey) ← el que usamos</h3>
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Ordena tus calificaciones de menor a mayor: 60, 70, 75, 80, 82, 85, 90, 95. El <strong>Q1</strong> es la nota en el 25% de la lista (~70). El <strong>Q3</strong> es la nota en el 75% (~90). El <strong>IQR</strong> es la distancia entre Q3 y Q1 = 20. Ahora cualquier nota menor a 70-(1.5×20)=40 o mayor a 90+(1.5×20)=120 es sospechosa. Una nota de 120 en un examen de 100 puntos — eso es un outlier.</p>
+  </div>
+
+  <div class="fml">
+    <strong>Q1</strong> = Percentil 25 &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Q3</strong> = Percentil 75 &nbsp;&nbsp;|&nbsp;&nbsp; <strong>IQR</strong> = Q3 − Q1<br><br>
+    Límite inferior = Q1 − <strong>1.5 × IQR</strong><br>
+    Límite superior = Q3 + <strong>1.5 × IQR</strong><br><br>
+    <em>Todo valor fuera de estos límites → candidato a outlier</em>
+  </div>
+
+  <div class="box info">
+    <div class="bi">💡</div>
+    <div class="bb"><strong>¿Por qué exactamente 1.5?</strong> Tukey demostró matemáticamente que con ese factor, en una distribución perfectamente normal, solo el <strong>0.7%</strong> de los datos caen fuera de los límites. Eso los hace genuinamente extremos. Con factor 3.0, solo el 0.0001% queda afuera — para detectar outliers ultra severos.</div>
+  </div>
+
+  <h3>Método 2 — Z-Score (Puntaje Z)</h3>
+  <div class="fml">
+    <strong>Z = (valor − media) / desviación estándar</strong><br><br>
+    Si |Z| &gt; 3 → outlier (cubre el 99.7% de una distribución normal)
+  </div>
+
+  <div class="tw">
+    <table>
+      <tr><th>Criterio</th><th>IQR de Tukey ← usamos</th><th>Z-Score</th></tr>
+      <tr><td>¿Asume distribución normal?</td><td><span class="bg">NO — más flexible</span></td><td><span class="br">SÍ — requiere normalidad</span></td></tr>
+      <tr><td>¿Robusto ante outliers propios?</td><td><span class="bg">SÍ — usa percentiles</span></td><td><span class="br">NO — la media se distorsiona</span></td></tr>
+      <tr><td>Mejor para</td><td>Exploración general</td><td>Datos confirmados como normales</td></tr>
+      <tr><td>Parámetro estándar</td><td>factor=1.5 (moderado), 3.0 (severo)</td><td>|Z| &gt; 3</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 4.3 IMPACTO -->
+<section class="sec" id="s43">
+  <div class="sec-hdr">
+    <div class="num c4">4.3</div>
+    <div class="sec-hdr-txt">
+      <h2>Impacto de outliers en estadísticas descriptivas</h2>
+      <p>Los números reales del dataset — por qué hay que tratarlos antes de cualquier KPI</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Demostración del impacto — comparar con y sin outliers</span>
+col = <span class="st">'total_venta'</span>
+
+<span class="cm"># Calcular límites IQR</span>
+q1      = fv[col].quantile(<span class="nm">0.25</span>)
+q3      = fv[col].quantile(<span class="nm">0.75</span>)
+iqr     = q3 - q1
+lim_sup = q3 + <span class="nm">1.5</span> * iqr
+
+<span class="cm"># Dos versiones del dataset</span>
+sin_outliers = fv[fv[col] <= lim_sup][col]
+con_outliers = fv[col]
+
+<span class="cm"># Comparar métricas</span>
+metricas = {
+    <span class="st">'Media'</span>    : (con_outliers.mean(),   sin_outliers.mean()),
+    <span class="st">'Mediana'</span>  : (con_outliers.median(), sin_outliers.median()),
+    <span class="st">'Desv. est'</span>: (con_outliers.std(),    sin_outliers.std()),
+    <span class="st">'Máximo'</span>   : (con_outliers.max(),    sin_outliers.max()),
+}
+
+<span class="kw">for</span> nombre, (con, sin) <span class="kw">in</span> metricas.items():
+    dif_pct = <span class="fn">abs</span>(con - sin) / sin * <span class="nm">100</span>
+    <span class="fn">print</span>(f<span class="st">"  {nombre:<18} {con:>15,.2f} {sin:>15,.2f} {dif_pct:>13.1f}%"</span>)
+
+<span class="fn">print</span>(f<span class="st">"\n  Outliers detectados: {(fv[col] > lim_sup).sum():,} filas"</span>)
+<span class="fn">print</span>(f<span class="st">"  Representa el {(fv[col] > lim_sup).sum()/len(fv)*100:.2f}% del dataset"</span>)</pre>
+
+  <div class="out">IMPACTO DE OUTLIERS EN ESTADÍSTICAS DE 'total_venta'
+
+Métrica                 Con outliers    Sin outliers   Diferencia %
+────────────────────────────────────────────────────────────────────
+  Media                       940.32          689.76          36.3%
+  Mediana                     544.90          461.76          18.0%
+  Desv. est                 1,624.33          747.39         117.3%
+  Máximo                   83,850.68        3,138.48        2571.7%
+
+  Outliers detectados: 3,025 filas
+  Representa el 5.99% del dataset</div>
+
+  <div class="box warn">
+    <div class="bi">📊</div>
+    <div class="bb"><strong>Interpretación de los resultados:</strong> Solo el 5.99% de las filas son outliers, pero distorsionan:
+      <ul style="margin-top:6px;margin-left:16px;">
+        <li>La <strong>media</strong> sube 36.3% — el KPI "venta promedio" estaría inflado sin causa real</li>
+        <li>La <strong>desviación estándar</strong> sube 117.3% — el reporte de variabilidad no refleja la realidad</li>
+        <li>El <strong>máximo</strong> es 2,571% mayor — imposible de escalar en un gráfico con el resto de datos</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 5 — DETECCIÓN Y TRATAMIENTO
+     ============================================================ -->
+<section class="sec" id="s5">
+  <div class="sec-hdr">
+    <div class="num c4">5.1</div>
+    <div class="sec-hdr-txt">
+      <h2>5.1 — Detección sistemática con función IQR</h2>
+      <p>Una función reutilizable para detectar outliers en todas las columnas numéricas</p>
+    </div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">detectar_outliers_iqr</span>(df, columnas, factor=<span class="nm">1.5</span>):
+    <span class="st">"""
+    Detecta outliers usando la Regla IQR de Tukey.
+    Retorna un DataFrame con el resumen por columna.
+
+    factor=1.5 → outliers moderados (Tukey estándar)
+    factor=3.0 → outliers extremos (solo casos severos)
+    """</span>
+    resultados = []
+    <span class="kw">for</span> col <span class="kw">in</span> columnas:
+        serie   = df[col].dropna()            <span class="cm"># ignorar nulos para el cálculo</span>
+        q1      = serie.quantile(<span class="nm">0.25</span>)
+        q3      = serie.quantile(<span class="nm">0.75</span>)
+        iqr     = q3 - q1
+        lim_inf = q1 - factor * iqr           <span class="cm"># límite por abajo</span>
+        lim_sup = q3 + factor * iqr           <span class="cm"># límite por arriba</span>
+
+        <span class="cm"># True para cada fila que está FUERA de los límites (en cualquier extremo)</span>
+        mask_out   = (df[col] < lim_inf) | (df[col] > lim_sup)
+        n_outliers = mask_out.sum()
+
+        resultados.append({
+            <span class="st">'columna'</span>     : col,
+            <span class="st">'Q1'</span>          : <span class="fn">round</span>(q1, <span class="nm">2</span>),
+            <span class="st">'Q3'</span>          : <span class="fn">round</span>(q3, <span class="nm">2</span>),
+            <span class="st">'IQR'</span>         : <span class="fn">round</span>(iqr, <span class="nm">2</span>),
+            <span class="st">'lim_inferior'</span>: <span class="fn">round</span>(lim_inf, <span class="nm">2</span>),
+            <span class="st">'lim_superior'</span>: <span class="fn">round</span>(lim_sup, <span class="nm">2</span>),
+            <span class="st">'outliers'</span>    : n_outliers,
+            <span class="st">'pct_%'</span>       : <span class="fn">round</span>(n_outliers / <span class="fn">len</span>(df) * <span class="nm">100</span>, <span class="nm">3</span>),
+            <span class="st">'max_valor'</span>   : <span class="fn">round</span>(df[col].max(), <span class="nm">2</span>),
+        })
+    <span class="kw">return</span> pd.DataFrame(resultados).sort_values(<span class="st">'outliers'</span>, ascending=<span class="kw">False</span>)
+
+cols_numericas = [<span class="st">'total_venta'</span>,<span class="st">'precio_unitario'</span>,<span class="st">'precio_final'</span>,
+                  <span class="st">'costo_total'</span>,<span class="st">'margen_usd'</span>,<span class="st">'cantidad'</span>,<span class="st">'descuento_pct'</span>]
+
+reporte_outliers = <span class="fn">detectar_outliers_iqr</span>(fv, cols_numericas)
+<span class="fn">print</span>(reporte_outliers.to_string(index=<span class="kw">False</span>))</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">mask_out = (df[col] &lt; lim_inf) | (df[col] &gt; lim_sup)</span><span class="xd">Crea una máscara booleana (True/False por fila). True indica que el valor está por fuera de los límites. El símbolo | es "o" para condiciones booleanas. Paréntesis son obligatorios en Python para este tipo de expresiones.</span></div>
+    <div class="xl"><span class="xc0">.sort_values('outliers', ascending=False)</span><span class="xd">Ordena el resultado de mayor a menor. La columna más problemática aparece primero. Con ascending=False el mayor va arriba.</span></div>
+  </div>
+
+  <div class="out">DETECCIÓN DE OUTLIERS — Regla IQR (factor=1.5)
+
+        columna     Q1      Q3     IQR  lim_inferior  lim_superior  outliers  pct_%  max_valor
+     margen_usd  18.50  202.24  183.74       -257.11        477.85      4122  8.162    2989.08
+    costo_total  72.87 1051.92  979.05      -1395.70       2520.50      3464  6.859    7887.70
+    total_venta 102.80 1320.16 1217.36      -1723.24       3146.20      3025  5.990   83850.68
+       cantidad   1.00    3.00    2.00         -2.00          6.00      2495  4.941      10.00
+  descuento_pct   0.00    0.10    0.10         -0.15          0.25       974  1.929       0.30
+precio_unitario  59.33  660.08  600.75       -841.80       1561.20         0  0.000    1120.89
+   precio_final  56.10  627.08  570.98       -800.37       1483.55         0  0.000    1120.89</div>
+
+  <h3>Visualizaciones de outliers</h3>
+<pre><span class="cm"># ── Boxplot: ver outliers como puntos sueltos ────────────────</span>
+fig = go.Figure()
+fig.add_trace(go.Box(
+    y         = fv[<span class="st">'total_venta'</span>],
+    name      = <span class="st">'total_venta'</span>,
+    boxpoints = <span class="st">'outliers'</span>,          <span class="cm"># muestra solo los puntos outliers</span>
+    marker    = <span class="fn">dict</span>(color=<span class="st">'#D85A30'</span>, size=<span class="nm">3</span>, opacity=<span class="nm">0.5</span>),
+    line      = <span class="fn">dict</span>(color=<span class="st">'#534AB7'</span>),
+    fillcolor = <span class="st">'#EEEDFE'</span>,
+))
+fig.update_layout(title=<span class="st">'Distribución de total_venta — outliers visibles como puntos'</span>)
+fig.show()
+
+<span class="cm"># ── Histograma: ver la cola de valores extremos ──────────────</span>
+fig2 = px.histogram(
+    fv, x=<span class="st">'total_venta'</span>, nbins=<span class="nm">100</span>,
+    title=<span class="st">'Histograma — ¿ves la cola derecha con outliers?'</span>,
+    color_discrete_sequence=[<span class="st">'#534AB7'</span>],
+)
+fig2.update_layout(plot_bgcolor=<span class="st">'white'</span>)
+fig2.show()</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">boxpoints='outliers'</span><span class="xd">Le dice a Plotly que dibuje como puntos individualmente solo los valores que están fuera de los límites IQR. Los valores normales forman la "caja"; los outliers aparecen como puntos sueltos por encima o por debajo.</span></div>
+    <div class="xl"><span class="xc0">px.histogram(fv, x='total_venta', nbins=100)</span><span class="xd">Crea un histograma dividiendo los valores en 100 grupos (bins). Si la mayoría de las barras están a la izquierda y hay barras sueltas muy a la derecha, hay una "cola derecha" — señal de outliers positivos.</span></div>
+  </div>
+
+<pre><span class="cm"># ── Ver el TOP 10 de valores más extremos ────────────────────</span>
+lim_sup = fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.75</span>) + <span class="nm">1.5</span> * (
+    fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.75</span>) - fv[<span class="st">'total_venta'</span>].quantile(<span class="nm">0.25</span>)
+)
+outliers_df = fv[fv[<span class="st">'total_venta'</span>] > lim_sup].copy()
+outliers_df = outliers_df.sort_values(<span class="st">'total_venta'</span>, ascending=<span class="kw">False</span>)
+<span class="fn">print</span>(outliers_df[[<span class="st">'id_venta'</span>,<span class="st">'id_producto'</span>,<span class="st">'cantidad'</span>,<span class="st">'precio_unitario'</span>,<span class="st">'total_venta'</span>]].head(<span class="nm">10</span>).to_string(index=<span class="kw">False</span>))
+
+<span class="cm"># ── ¿Se concentran en alguna categoría de producto? ──────────</span>
+outliers_con_prod = outliers_df.merge(
+    dim_productos[[<span class="st">'id_producto'</span>,<span class="st">'nombre'</span>,<span class="st">'categoria'</span>]],
+    on=<span class="st">'id_producto'</span>, how=<span class="st">'left'</span>
+)
+<span class="fn">print</span>(
+    outliers_con_prod.groupby(<span class="st">'categoria'</span>)
+    .agg(n_outliers=(<span class="st">'id_venta'</span>,<span class="st">'count'</span>), max_venta=(<span class="st">'total_venta'</span>,<span class="st">'max'</span>))
+    .sort_values(<span class="st">'n_outliers'</span>, ascending=<span class="kw">False</span>).to_string()
+)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">outliers_df.merge(dim_productos[...], on='id_producto', how='left')</span><span class="xd">JOIN de los outliers con la dimensión de productos. Así podemos ver si los outliers se concentran en una categoría específica (señal de error sistémico) o están dispersos en todas (señal de eventos reales).</span></div>
+  </div>
+</section>
+
+<!-- WINSORIZACIÓN -->
+<section class="sec" id="wins">
+  <div class="sec-hdr">
+    <div class="num c4">5.2</div>
+    <div class="sec-hdr-txt">
+      <h2>5.2 — Decisión de tratamiento: Winsorización</h2>
+      <p>Recortar al límite en vez de eliminar la fila completa</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Tienes una regla que mide de 0 a 30 cm. Alguien midió algo que dio "500 cm" — claramente un error. En vez de tirar esa hoja de datos, <strong>recortas el valor al máximo de tu regla: 30 cm</strong>. La medición sigue en el dataset, solo con un valor razonable. Eso es Winsorizar: recortar al límite, no eliminar.</p>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="border-left:4px solid #22C55E;">
+      <div class="ic">✂️</div>
+      <strong>Winsorización ← lo que hacemos</strong>
+      <p>Reemplazamos el valor extremo con el límite IQR. La fila se conserva. No perdemos ninguna transacción.</p>
+    </div>
+    <div class="card" style="border-left:4px solid #EF4444;">
+      <div class="ic">🗑️</div>
+      <strong>Eliminación ← lo que NO hacemos</strong>
+      <p>Perdemos filas completas. Introduce sesgo en reportes de volumen. El total de ventas procesadas quedaría incompleto.</p>
+    </div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">winsorizat_iqr</span>(df, columna, factor=<span class="nm">1.5</span>):
+    <span class="st">"""
+    Aplica Winsorización usando los límites IQR.
+    Reemplaza valores fuera de los límites con el límite correspondiente.
+    No elimina filas — preserva todas las transacciones.
+    """</span>
+    q1      = df[columna].quantile(<span class="nm">0.25</span>)
+    q3      = df[columna].quantile(<span class="nm">0.75</span>)
+    iqr     = q3 - q1
+    lim_inf = q1 - factor * iqr
+    lim_sup = q3 + factor * iqr
+
+    n_inf = (df[columna] < lim_inf).sum()   <span class="cm"># cuántos serán recortados abajo</span>
+    n_sup = (df[columna] > lim_sup).sum()   <span class="cm"># cuántos serán recortados arriba</span>
+
+    <span class="cm"># ★ .clip() es el corazón de la Winsorización:
+    # → Si valor < lim_inf → queda en lim_inf
+    # → Si valor > lim_sup → queda en lim_sup
+    # → Si está dentro del rango → no cambia</span>
+    df[columna] = df[columna].clip(lower=lim_inf, upper=lim_sup)
+
+    <span class="fn">print</span>(f<span class="st">"  '{columna}':"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Límite superior: ${lim_sup:>10,.2f} → {n_sup} valores recortados"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Nuevo máximo  : ${df[columna].max():>10,.2f}"</span>)
+    <span class="fn">print</span>(f<span class="st">"    Nueva media   : ${df[columna].mean():>10,.2f}"</span>)
+    <span class="kw">return</span> df
+
+fv = <span class="fn">winsorizat_iqr</span>(fv, <span class="st">'total_venta'</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">df[columna].clip(lower=lim_inf, upper=lim_sup)</span><span class="xd">El método más importante de esta sección. <code>.clip()</code> "corta" todos los valores que salen del rango permitido: los que son menores a lim_inf se convierten en lim_inf, los que son mayores a lim_sup se convierten en lim_sup. Los que están dentro no cambian.</span></div>
+  </div>
+
+  <h4>Verificación post-Winsorización</h4>
+<pre><span class="cm"># Reutilizamos la misma función — si funcionó, outliers debería ser 0</span>
+reporte_post = <span class="fn">detectar_outliers_iqr</span>(fv, [<span class="st">'total_venta'</span>])
+<span class="fn">print</span>(reporte_post.to_string(index=<span class="kw">False</span>))
+
+<span class="cm"># Boxplot post-Winsorización — ya no deberían aparecer puntos sueltos</span>
+fig3 = go.Figure()
+fig3.add_trace(go.Box(
+    y=fv[<span class="st">'total_venta'</span>], name=<span class="st">'Después de Winsorización'</span>,
+    boxpoints=<span class="st">'outliers'</span>,
+    marker=<span class="fn">dict</span>(color=<span class="st">'#1D9E75'</span>, size=<span class="nm">3</span>),
+    line=<span class="fn">dict</span>(color=<span class="st">'#1D9E75'</span>), fillcolor=<span class="st">'#E1F5EE'</span>,
+))
+fig3.update_layout(title=<span class="st">'total_venta después de Winsorización'</span>)
+fig3.show()</pre>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 6 — TEXTO Y DUPLICADOS
+     ============================================================ -->
+<section class="sec" id="s6">
+  <div class="sec-hdr">
+    <div class="num c5">6</div>
+    <div class="sec-hdr-txt">
+      <h2>6. Duplicados y Estandarización Profunda de Texto</h2>
+      <p>Primero texto uniforme, luego buscar duplicados — el orden importa</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <div class="bi">⚠️</div>
+    <div class="bb"><strong>¿Por qué primero texto y luego duplicados?</strong> Los duplicados pueden tener inconsistencias de texto ("Efectivo" vs "efectivo") que los hacen parecer distintos cuando son el mismo registro. Si buscas duplicados antes de unificar el texto, los pasarás por alto.</div>
+  </div>
+
+  <h3>6.1 — Estandarización profunda con mapas de equivalencias</h3>
+  <p>En la Sesión 2 corregimos capitalización superficialmente con <code>.str.title()</code>. Ahora atacamos las <strong>inconsistencias semánticas</strong>: valores que significan lo mismo pero están escritos diferente.</p>
+
+<pre><span class="cm"># Ver exactamente qué quedó después de la Sesión 2</span>
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'canal'</span>, <span class="st">'metodo_pago'</span>]:
+    <span class="fn">print</span>(f<span class="st">"  {col}:"</span>)
+    conteo = fv[col].value_counts(dropna=<span class="kw">False</span>)
+    <span class="kw">for</span> val, n <span class="kw">in</span> conteo.items():
+        <span class="fn">print</span>(f<span class="st">"    '{val}'  →  {n:,} registros"</span>)
+    <span class="fn">print</span>()</pre>
+
+<pre><span class="kw">def</span> <span class="fn">estandarizar_valores</span>(df, columna, mapa_reemplazos):
+    <span class="st">"""
+    Reemplaza valores inconsistentes según un mapa de equivalencias.
+    El mapa lo define el analista con conocimiento de negocio.
+    mapa_reemplazos: dict {'valor_incorrecto': 'valor_correcto'}
+    """</span>
+    n_antes  = df[columna].nunique()
+    cambios  = df[columna].map(
+        <span class="kw">lambda</span> x: mapa_reemplazos.get(x, x) <span class="kw">if</span> pd.notna(x) <span class="kw">else</span> x
+    )
+    n_cambios = (df[columna] != cambios).sum()
+    df[columna] = cambios
+    n_despues = df[columna].nunique()
+
+    <span class="fn">print</span>(f<span class="st">"  '{columna}': {n_antes} → {n_despues} únicos, {n_cambios:,} registros modificados"</span>)
+    <span class="kw">return</span> df
+
+<span class="cm"># Mapa para 'canal'</span>
+mapa_canal = {
+    <span class="st">'Ecommerce'</span>    : <span class="st">'E-Commerce'</span>,     <span class="cm"># sin guion → con guion</span>
+    <span class="st">'App Movil'</span>    : <span class="st">'App Móvil'</span>,       <span class="cm"># sin tilde → con tilde</span>
+    <span class="st">'Telefonico'</span>   : <span class="st">'Telefónico'</span>,
+    <span class="st">'Tienda Fisica'</span>: <span class="st">'Tienda Física'</span>,
+}
+
+<span class="cm"># Mapa para 'metodo_pago'</span>
+mapa_pago = {
+    <span class="st">'T.Debito'</span>       : <span class="st">'Tarjeta Débito'</span>,  <span class="cm"># abreviación → nombre completo</span>
+    <span class="st">'Tarjeta Debito'</span> : <span class="st">'Tarjeta Débito'</span>,  <span class="cm"># sin tilde → con tilde</span>
+    <span class="st">'Tarjeta Credito'</span>: <span class="st">'Tarjeta Crédito'</span>,
+    <span class="st">'Qr/Billetera'</span>   : <span class="st">'QR/Billetera'</span>,
+}
+
+fv = <span class="fn">estandarizar_valores</span>(fv, <span class="st">'canal'</span>,       mapa_canal)
+fv = <span class="fn">estandarizar_valores</span>(fv, <span class="st">'metodo_pago'</span>, mapa_pago)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">lambda x: mapa_reemplazos.get(x, x)</span><span class="xd">Una función anónima (lambda) que busca x en el diccionario. <code>.get(x, x)</code> devuelve el valor del diccionario si x está en él, o x mismo si no está. Así los valores correctos no cambian, solo los que están en el mapa.</span></div>
+    <div class="xl"><span class="xc0">if pd.notna(x) else x</span><span class="xd">Si el valor es nulo (NaN), lo deja como está. No intentamos reemplazar nulos con el mapa.</span></div>
+  </div>
+</section>
+
+<!-- DUPLICADOS -->
+<section class="sec" id="dup">
+  <div class="sec-hdr">
+    <div class="num c5">6.2</div>
+    <div class="sec-hdr-txt">
+      <h2>6.2 — Duplicados: detección y eliminación</h2>
+      <p>Los 3 tipos de duplicados en datos transaccionales</p>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card" style="border-top:3px solid #EF4444;">
+      <strong>🔴 Duplicado exacto</strong>
+      <p>Todas las columnas son idénticas. Mismo ID, mismo valor, mismo todo. Error claro del sistema.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #F59E0B;">
+      <strong>🟡 Duplicado de clave</strong>
+      <p>El ID es el mismo pero algún campo varía. Difícil de detectar. Requiere investigar cuál es el correcto.</p>
+    </div>
+    <div class="card" style="border-top:3px solid #22C55E;">
+      <strong>🟢 Duplicado de negocio</strong>
+      <p>Diferentes IDs pero misma transacción procesada dos veces por el sistema.</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># ── Paso 1: detectar duplicados exactos ──────────────────────</span>
+dup_exactos = fv.duplicated().sum()
+<span class="fn">print</span>(f<span class="st">"Duplicados exactos: {dup_exactos:,}"</span>)
+
+<span class="cm"># ── Paso 2: duplicados por clave primaria ─────────────────────</span>
+dup_id = fv.duplicated(subset=[<span class="st">'id_venta'</span>]).sum()
+<span class="fn">print</span>(f<span class="st">"Duplicados por id_venta: {dup_id:,}"</span>)
+
+<span class="cm"># ── Paso 3: ver ejemplos de los duplicados ────────────────────</span>
+mask_dup = fv.duplicated(keep=<span class="kw">False</span>)   <span class="cm"># True en TODAS las filas duplicadas</span>
+<span class="fn">print</span>(
+    fv[mask_dup].sort_values(<span class="st">'id_venta'</span>)
+    .head(<span class="nm">6</span>)[[<span class="st">'id_venta'</span>,<span class="st">'id_cliente'</span>,<span class="st">'id_producto'</span>,<span class="st">'total_venta'</span>]]
+    .to_string(index=<span class="kw">False</span>)
+)
+
+<span class="cm"># ── Eliminación ──────────────────────────────────────────────</span>
+n_antes = <span class="fn">len</span>(fv)
+fv = fv.drop_duplicates(keep=<span class="st">'first'</span>).reset_index(drop=<span class="kw">True</span>)
+<span class="fn">print</span>(f<span class="st">"Eliminadas: {n_antes - len(fv):,} filas ({(n_antes-len(fv))/n_antes*100:.2f}%)"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fv.duplicated(keep=False)</span><span class="xd">Con <code>keep=False</code>, marca como True TODAS las filas duplicadas (incluyendo la primera). Úsalo para verlas todas juntas y entender el patrón. Con <code>keep='first'</code> (el default), solo marca las de la segunda ocurrencia en adelante.</span></div>
+    <div class="xl"><span class="xc0">fv.drop_duplicates(keep='first')</span><span class="xd">Elimina los duplicados conservando la primera ocurrencia. Todas las copias posteriores se borran.</span></div>
+    <div class="xl"><span class="xc0">.reset_index(drop=True)</span><span class="xd">Después de eliminar filas los índices quedan con "huecos" (0,1,5,8...). reset_index() los renumera desde 0. Con <code>drop=True</code> el índice viejo no se guarda como columna adicional.</span></div>
+  </div>
+</section>
+
+<!-- DOMINIO -->
+<section class="sec" id="dom">
+  <div class="sec-hdr">
+    <div class="num c5">6.3</div>
+    <div class="sec-hdr-txt">
+      <h2>6.3 — Violación de dominio</h2>
+      <p>El valor existe, no es nulo, no es duplicado — pero no pertenece a los valores válidos</p>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Un examen de opción múltiple tiene respuestas: A, B, C o D. Si alguien contesta "E" — esa respuesta existe, no está en blanco, pero <strong>no está en el conjunto de opciones válidas</strong>. Eso es una violación de dominio.</p>
+  </div>
+
+<pre><span class="cm"># Definir los valores válidos por columna según las reglas del negocio</span>
+dominios = {
+    <span class="st">'region'</span> : [<span class="st">'Costa'</span>, <span class="st">'Sierra'</span>, <span class="st">'Digital'</span>],
+    <span class="st">'tipo'</span>   : [<span class="st">'Mall'</span>, <span class="st">'Tienda grande'</span>, <span class="st">'Tienda mediana'</span>, <span class="st">'Digital'</span>, <span class="st">'Híbrido'</span>],
+}
+
+<span class="kw">for</span> col, valores_validos <span class="kw">in</span> dominios.items():
+    mask_invalidos = ~dim_sucursales[col].isin(valores_validos)
+    n = mask_invalidos.sum()
+    <span class="kw">if</span> n > <span class="nm">0</span>:
+        <span class="fn">print</span>(f<span class="st">"  ⚠️  '{col}' — {n} valor(es) fuera de dominio:"</span>)
+        <span class="fn">print</span>(dim_sucursales[mask_invalidos][[<span class="st">'id_sucursal'</span>,<span class="st">'nombre'</span>,<span class="st">'ciudad'</span>,<span class="st">'provincia'</span>,col]])
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"  ✅ '{col}' — todos dentro del dominio"</span>)
+
+<span class="cm"># ── Corrección: Loja es provincia de la Sierra ecuatoriana ────</span>
+dim_sucursales.loc[dim_sucursales[<span class="st">'nombre'</span>] == <span class="st">'Loja Centro'</span>, <span class="st">'region'</span>] = <span class="st">'Sierra'</span>
+<span class="fn">print</span>(<span class="st">"✅ Corrección aplicada: 'Loja Centro' → region='Sierra'"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">~dim_sucursales[col].isin(valores_validos)</span><span class="xd"><code>.isin()</code> devuelve True si el valor está en la lista. El <code>~</code> invierte: True→False, False→True. Así detectas las filas con valores que NO están en la lista de válidos.</span></div>
+    <div class="xl"><span class="xc0">dim_sucursales.loc[condicion, 'region'] = 'Sierra'</span><span class="xd"><code>.loc[]</code> permite seleccionar y editar filas/columnas específicas. Aquí: "en la columna 'region', solo en las filas donde nombre=='Loja Centro', pon el valor 'Sierra'". Es como editar una celda específica de Excel de forma precisa.</span></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 7 — INTEGRIDAD REFERENCIAL
+     ============================================================ -->
+<section class="sec" id="s7">
+  <div class="sec-hdr">
+    <div class="num c5">7</div>
+    <div class="sec-hdr-txt">
+      <h2>7. Integridad Referencial y JOINs de Validación</h2>
+      <p>¿Cada venta apunta a un cliente, producto y sucursal que realmente existe?</p>
+    </div>
+  </div>
+
+  <div class="libro">
+    <div class="ic">📖</div>
+    <div class="ct">
+      <div class="ttl">The Data Warehouse Toolkit — Ralph Kimball & Margy Ross (Wiley, 3ª ed. 2013)</div>
+      <div class="auth">Ralph Kimball · Margy Ross</div>
+      <div class="cita">"Referential integrity requires that every foreign key in the fact table match a valid primary key in the associated dimension table. Orphaned foreign keys — fact rows that reference a non-existent dimension row — are among the most insidious data quality problems because they cause silent data loss in analytics queries."</div>
+    </div>
+  </div>
+
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Tu tabla de ventas dice "esta venta fue del cliente #9999". Pero cuando buscas en la lista de clientes, el #9999 no existe. Esa venta apunta a alguien que no está en el sistema — es como una carta con una dirección que no existe en el mapa. Cuando hagas el JOIN para el dashboard, esa venta aparecerá sin nombre de cliente, sin segmento, sin nada — como si no hubiera ocurrido.</p>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">validar_fk</span>(fact, dim, col_fk, nombre_dim, col_dim=<span class="kw">None</span>):
+    <span class="st">"""
+    Valida que todos los valores de col_fk en fact
+    existan en la dimensión correspondiente.
+    Usa LEFT JOIN: las FKs huérfanas producen NaN en la dimensión.
+    """</span>
+    <span class="kw">if</span> col_dim <span class="kw">is None</span>:
+        col_dim = col_fk
+
+    col_ref  = [c <span class="kw">for</span> c <span class="kw">in</span> dim.columns <span class="kw">if</span> c != col_dim][<span class="nm">0</span>]
+
+    <span class="cm"># LEFT JOIN: FK huérfana → col_ref queda NaN</span>
+    merged   = fact[[col_fk]].merge(
+        dim[[col_dim, col_ref]],
+        left_on=col_fk, right_on=col_dim, how=<span class="st">'left'</span>
+    )
+    huerfanas = merged[col_ref].isnull().sum()
+    pct       = huerfanas / <span class="fn">len</span>(fact) * <span class="nm">100</span>
+    estado = <span class="st">"✅ OK"</span> <span class="kw">if</span> huerfanas == <span class="nm">0</span> <span class="kw">else</span> f<span class="st">"⚠️  {huerfanas:,} FKs huérfanas ({pct:.2f}%)"</span>
+    <span class="fn">print</span>(f<span class="st">"  {col_fk:<18} → {nombre_dim:<20} {estado}"</span>)
+    <span class="kw">return</span> huerfanas
+
+<span class="fn">print</span>(<span class="st">"VALIDACIÓN DE INTEGRIDAD REFERENCIAL — fact_ventas\n"</span>)
+total = <span class="nm">0</span>
+total += <span class="fn">validar_fk</span>(fv, dim_clientes,   <span class="st">'id_cliente'</span>,  <span class="st">'dim_clientes'</span>)
+total += <span class="fn">validar_fk</span>(fv, dim_productos,  <span class="st">'id_producto'</span>, <span class="st">'dim_productos'</span>)
+total += <span class="fn">validar_fk</span>(fv, dim_sucursales, <span class="st">'id_sucursal'</span>, <span class="st">'dim_sucursales'</span>)
+total += <span class="fn">validar_fk</span>(fv, dim_tiempo,     <span class="st">'id_tiempo'</span>,   <span class="st">'dim_tiempo'</span>)
+<span class="fn">print</span>(f<span class="st">"\n  Total FKs huérfanas: {total:,}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fact[[col_fk]].merge(dim[...], how='left')</span><span class="xd">LEFT JOIN entre fact_ventas (columna FK) y la dimensión. Si un id_cliente de ventas no existe en dim_clientes, la fila fusionada tendrá NaN en la columna de dimensión. Contar esos NaN = contar FKs huérfanas.</span></div>
+    <div class="xl"><span class="xc0">col_ref = [c for c in dim.columns if c != col_dim][0]</span><span class="xd">Selecciona automáticamente la primera columna de la dimensión que no es la PK. Necesitamos alguna columna de la dimensión para detectar los NaN del JOIN.</span></div>
+  </div>
+
+<pre><span class="kw">def</span> <span class="fn">tratar_fk_huerfanas</span>(fact, dim, col_fk, col_dim=<span class="kw">None</span>, accion=<span class="st">'eliminar'</span>):
+    <span class="st">"""
+    accion='eliminar' → elimina filas huérfanas de fact
+    accion='reportar' → solo reporta, no modifica
+    """</span>
+    <span class="kw">if</span> col_dim <span class="kw">is None</span>: col_dim = col_fk
+    ids_validos    = <span class="fn">set</span>(dim[col_dim].unique())
+    mask_huerfanas = ~fv[col_fk].isin(ids_validos)
+    n = mask_huerfanas.sum()
+
+    <span class="kw">if</span> n == <span class="nm">0</span>:
+        <span class="fn">print</span>(f<span class="st">"  ✅ '{col_fk}' — sin FKs huérfanas"</span>)
+        <span class="kw">return</span> fact
+    <span class="kw">if</span> accion == <span class="st">'eliminar'</span>:
+        fact = fact[~mask_huerfanas].reset_index(drop=<span class="kw">True</span>)
+        <span class="fn">print</span>(f<span class="st">"  ⚠️  '{col_fk}' — {n} filas eliminadas"</span>)
+    <span class="kw">return</span> fact
+
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_clientes,   <span class="st">'id_cliente'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_productos,  <span class="st">'id_producto'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_sucursales, <span class="st">'id_sucursal'</span>)
+fv = <span class="fn">tratar_fk_huerfanas</span>(fv, dim_tiempo,     <span class="st">'id_tiempo'</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">ids_validos = set(dim[col_dim].unique())</span><span class="xd">Crea un <code>set</code> (conjunto) con todos los IDs válidos de la dimensión. Usar set en vez de lista hace la búsqueda O(1) en vez de O(n) — en datasets grandes esto puede ser cientos de veces más rápido.</span></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECCIÓN 8 — DATASET FINAL
+     ============================================================ -->
+<section class="sec" id="s8">
+  <div class="sec-hdr">
+    <div class="num c3">8</div>
+    <div class="sec-hdr-txt">
+      <h2>8. Construcción del Dataset Limpio Final</h2>
+      <p>Reporte ETL + JOINs + columnas derivadas + verificación de calidad</p>
+    </div>
+  </div>
+
+  <h4>8.1 — Reporte completo del proceso ETL</h4>
+<pre>pasos = [
+    (<span class="st">"Tipos de datos corregidos"</span>,           <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Fechas convertidas a datetime64"</span>,      <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Capitalización estandarizada"</span>,         <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Nulos imputados (moda/mediana)"</span>,       <span class="st">"✅ Sesión 2"</span>),
+    (<span class="st">"Outliers winsorizados (IQR Tukey)"</span>,    <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Duplicados exactos eliminados"</span>,        <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Inconsistencias de texto corregidas"</span>,  <span class="st">"✅ Sesión 3"</span>),
+    (<span class="st">"Integridad referencial validada"</span>,      <span class="st">"✅ Sesión 3"</span>),
+]
+
+<span class="fn">print</span>(f<span class="st">"  Filas original  : {50500:>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Filas limpias   : {len(fv):>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Nulos restantes : {fv.isnull().sum().sum():>10,}"</span>)
+<span class="fn">print</span>(f<span class="st">"  Duplicados rest.: {fv.duplicated().sum():>10,}"</span>)</pre>
+
+  <h4>8.2 — Dataset analítico enriquecido con JOINs</h4>
+  <div class="nino">
+    <div class="et">🧒 Como para un niño de 8 años</div>
+    <p>Tienes una libreta de ventas que solo dice "vendí el producto #15 al cliente #302". Para el dashboard necesitas saber el <em>nombre</em> del producto y el <em>segmento</em> del cliente. El JOIN es como abrir la libreta de productos, buscar el #15 y copiar su nombre junto a esa venta — para que todo esté en una sola tabla fácil de consultar.</p>
+  </div>
+
+<pre><span class="cm"># JOIN con dim_tiempo — agregar año, mes, trimestre, temporada...</span>
+fv_limpia = fv.merge(
+    dim_tiempo[[<span class="st">'id_tiempo'</span>,<span class="st">'fecha'</span>,<span class="st">'anio'</span>,<span class="st">'trimestre'</span>,<span class="st">'mes'</span>,
+                <span class="st">'mes_nombre'</span>,<span class="st">'dia_nombre'</span>,<span class="st">'es_finde'</span>,<span class="st">'es_feriado'</span>,<span class="st">'temporada'</span>]],
+    on=<span class="st">'id_tiempo'</span>, how=<span class="st">'left'</span>
+)
+
+<span class="cm"># JOIN con dim_productos — agregar categoría y margen</span>
+fv_limpia = fv_limpia.merge(
+    dim_productos[[<span class="st">'id_producto'</span>,<span class="st">'nombre'</span>,<span class="st">'categoria'</span>,<span class="st">'precio_costo'</span>,<span class="st">'margen_bruto'</span>]],
+    on=<span class="st">'id_producto'</span>, how=<span class="st">'left'</span>, suffixes=(<span class="st">''</span>,<span class="st">'_prod'</span>)
+)
+
+<span class="cm"># JOIN con dim_sucursales — agregar ciudad, provincia, región</span>
+fv_limpia = fv_limpia.merge(
+    dim_sucursales[[<span class="st">'id_sucursal'</span>,<span class="st">'nombre'</span>,<span class="st">'ciudad'</span>,<span class="st">'provincia'</span>,<span class="st">'region'</span>,<span class="st">'tipo'</span>]],
+    on=<span class="st">'id_sucursal'</span>, how=<span class="st">'left'</span>, suffixes=(<span class="st">''</span>,<span class="st">'_suc'</span>)
+)
+
+<span class="cm"># JOIN con dim_clientes — agregar segmento, edad, ingreso</span>
+fv_limpia = fv_limpia.merge(
+    dim_clientes[[<span class="st">'id_cliente'</span>,<span class="st">'segmento'</span>,<span class="st">'edad'</span>,<span class="st">'ingreso_mensual'</span>,<span class="st">'genero'</span>]],
+    on=<span class="st">'id_cliente'</span>, how=<span class="st">'left'</span>
+)
+
+<span class="fn">print</span>(f<span class="st">"✅ Filas: {len(fv_limpia):,} | Columnas: {fv_limpia.shape[1]}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">fv.merge(dim_tiempo[...], on='id_tiempo', how='left')</span><span class="xd">LEFT JOIN: para cada fila de fv, busca el registro en dim_tiempo con el mismo id_tiempo y agrega sus columnas. Con <code>how='left'</code> todas las filas de fv se conservan aunque no haya match (las de la dimensión quedarían NaN).</span></div>
+    <div class="xl"><span class="xc0">suffixes=('', '_prod')</span><span class="xd">Si dos columnas del JOIN tienen el mismo nombre (ej: 'nombre' en ventas y 'nombre' en productos), agrega el sufijo indicado. La columna de la tabla izquierda queda sin sufijo, la derecha recibe '_prod'.</span></div>
+  </div>
+
+  <h4>Columnas derivadas de negocio — KPIs calculados</h4>
+<pre><span class="cm"># 1. Margen porcentual real por transacción</span>
+fv_limpia[<span class="st">'margen_pct_real'</span>] = (
+    fv_limpia[<span class="st">'margen_usd'</span>] / fv_limpia[<span class="st">'total_venta'</span>] * <span class="nm">100</span>
+).round(<span class="nm">2</span>)
+
+<span class="cm"># 2. Año-Mes como string para visualizaciones ("2024-01")</span>
+fv_limpia[<span class="st">'anio_mes'</span>] = (
+    fv_limpia[<span class="st">'anio'</span>].astype(<span class="fn">str</span>) + <span class="st">'-'</span> +
+    fv_limpia[<span class="st">'mes'</span>].astype(<span class="fn">str</span>).str.zfill(<span class="nm">2</span>)  <span class="cm"># "1" → "01"</span>
+)
+
+<span class="cm"># 3. Indicador binario de descuento (1=tuvo descuento, 0=no)</span>
+fv_limpia[<span class="st">'tiene_descuento'</span>] = (fv_limpia[<span class="st">'descuento_pct'</span>] > <span class="nm">0</span>).astype(<span class="fn">int</span>)
+
+<span class="cm"># 4. Canal agrupado (Físico vs Digital)</span>
+fv_limpia[<span class="st">'canal_tipo'</span>] = fv_limpia[<span class="st">'canal'</span>].map({
+    <span class="st">'Tienda Física'</span>: <span class="st">'Físico'</span>,
+    <span class="st">'E-Commerce'</span>   : <span class="st">'Digital'</span>,
+    <span class="st">'App Móvil'</span>    : <span class="st">'Digital'</span>,
+    <span class="st">'Telefónico'</span>   : <span class="st">'Digital'</span>,
+})</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.str.zfill(2)</span><span class="xd">Rellena con ceros a la izquierda hasta tener 2 caracteres. "1" → "01", "12" → "12". Necesario para que al ordenar alfabéticamente los meses queden en orden correcto: "2024-01" antes de "2024-10" (sin zfill quedaría "2024-1" que alfabéticamente va después de "2024-10").</span></div>
+    <div class="xl"><span class="xc0">(fv_limpia['descuento_pct'] > 0).astype(int)</span><span class="xd">Crea primero una columna True/False, luego la convierte a 1/0 con .astype(int). Útil para análisis que necesitan valores numéricos (correlaciones, modelos de ML).</span></div>
+  </div>
+
+  <h4>Verificación final de calidad</h4>
+<pre>checks = {
+    <span class="st">'Sin valores nulos'</span>       : fv_limpia.isnull().sum().sum() == <span class="nm">0</span>,
+    <span class="st">'Sin duplicados'</span>          : fv_limpia.duplicated().sum() == <span class="nm">0</span>,
+    <span class="st">'total_venta > 0'</span>         : (fv_limpia[<span class="st">'total_venta'</span>] > <span class="nm">0</span>).all(),
+    <span class="st">'cantidad > 0'</span>            : (fv_limpia[<span class="st">'cantidad'</span>] > <span class="nm">0</span>).all(),
+    <span class="st">'descuento_pct en [0,0.5]'</span>: fv_limpia[<span class="st">'descuento_pct'</span>].between(<span class="nm">0</span>, <span class="nm">0.5</span>).all(),
+    <span class="st">'categorias completas'</span>    : fv_limpia[<span class="st">'categoria'</span>].notnull().all(),
+}
+
+<span class="kw">for</span> check, resultado <span class="kw">in</span> checks.items():
+    <span class="fn">print</span>(f<span class="st">"  {'✅' if resultado else '❌'}  {check}"</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">(fv_limpia['total_venta'] > 0).all()</span><span class="xd"><code>.all()</code> devuelve True solo si TODAS las filas cumplen la condición. Si incluso una sola fila viola la regla, retorna False. Es como un "y" lógico aplicado a todo el DataFrame.</span></div>
+    <div class="xl"><span class="xc0">.between(0, 0.5)</span><span class="xd">Verifica que cada valor esté entre 0 y 0.5 (inclusive en ambos extremos). Equivale a <code>(col &gt;= 0) &amp; (col &lt;= 0.5)</code> pero más legible.</span></div>
+  </div>
+</section>
+
+<!-- SECCIÓN 9 — CIERRE -->
+<section class="sec" id="s9">
+  <div class="sec-hdr">
+    <div class="num c8">9</div>
+    <div class="sec-hdr-txt">
+      <h2>9. Validación Final y Guardado del Dataset Limpio</h2>
+      <p>Comparativa antes/después y exportación como CSV para las sesiones siguientes</p>
+    </div>
+  </div>
+
+<pre><span class="cm"># Comparativa antes vs. después del ETL completo</span>
+original = pd.read_excel(<span class="st">'fv_checkpoint_nulos.xlsx'</span>)   <span class="cm"># dataset de la S2</span>
+
+comparativas = [
+    (<span class="st">'Filas totales'</span>,       <span class="fn">len</span>(original),                    <span class="fn">len</span>(fv_limpia)),
+    (<span class="st">'Nulos totales'</span>,       original.isnull().sum().sum(),     fv_limpia.isnull().sum().sum()),
+    (<span class="st">'Duplicados'</span>,          original.duplicated().sum(),       fv_limpia.duplicated().sum()),
+    (<span class="st">'Media total_venta'</span>,   original[<span class="st">'total_venta'</span>].mean(),    fv_limpia[<span class="st">'total_venta'</span>].mean()),
+    (<span class="st">'Mediana total_venta'</span>, original[<span class="st">'total_venta'</span>].median(),  fv_limpia[<span class="st">'total_venta'</span>].median()),
+    (<span class="st">'Máx total_venta'</span>,     original[<span class="st">'total_venta'</span>].max(),     fv_limpia[<span class="st">'total_venta'</span>].max()),
+]
+
+<span class="fn">print</span>(f<span class="st">"{'Métrica':<30} {'Antes':>12} {'Después':>12}"</span>)
+<span class="kw">for</span> nombre, antes, despues <span class="kw">in</span> comparativas:
+    <span class="kw">if</span> <span class="fn">isinstance</span>(antes, <span class="fn">float</span>):
+        <span class="fn">print</span>(f<span class="st">"  {nombre:<30} {antes:>12,.2f} {despues:>12,.2f}"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(f<span class="st">"  {nombre:<30} {antes:>12,} {despues:>12,}"</span>)</pre>
+
+<pre><span class="cm"># Guardar el dataset limpio como CSV para todas las sesiones siguientes</span>
+fv_limpia.to_csv(<span class="st">'fv_limpia_final.csv'</span>, index=<span class="kw">False</span>)
+
+<span class="fn">print</span>(<span class="st">"💾 Dataset limpio guardado: fv_limpia_final.csv"</span>)
+<span class="fn">print</span>(f<span class="st">"   Filas    : {len(fv_limpia):,}"</span>)
+<span class="fn">print</span>(f<span class="st">"   Columnas : {fv_limpia.shape[1]}"</span>)
+<span class="fn">print</span>(<span class="st">"\n   Este archivo es el insumo de todas las sesiones siguientes."</span>)</pre>
+
+  <div class="xc">
+    <div class="xl"><span class="xc0">.to_csv('fv_limpia_final.csv', index=False)</span><span class="xd">Guarda el DataFrame como CSV (Comma Separated Values). CSV es más liviano que Excel, compatible con cualquier herramienta (Python, R, SQL, Tableau, Power BI). Con <code>index=False</code> no guarda la columna de índice de pandas (0,1,2...) que no tiene valor de negocio.</span></div>
+  </div>
+
+  <div class="box tip">
+    <div class="bi">💜</div>
+    <div class="bb">
+      <strong>Cita de cierre del notebook:</strong><br>
+      <em>"El proceso ETL no es un paso técnico — es una decisión estadística y de negocio que determina la calidad de todo lo que viene después. Cada sesión del curso a partir de aquí usa fv_limpia_final.csv. La calidad de los análisis, el clustering, el forecasting y el dashboard dependen de las decisiones que tomamos en estas dos sesiones."</em>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     BIBLIOGRAFÍA
+     ============================================================ -->
+<section class="sec" id="biblio">
+  <div class="sec-hdr">
+    <div class="num c6">📚</div>
+    <div class="sec-hdr-txt">
+      <h2>Bibliografía y referencias</h2>
+      <p>Libros que respaldan cada decisión técnica del ETL</p>
+    </div>
+  </div>
+
+  <div class="biblio-grid">
+    <div class="bib-card">
+      <div class="bc-t">Python for Data Analysis</div>
+      <div class="bc-a">Wes McKinney (creador de pandas)</div>
+      <div class="bc-y">O'Reilly, 3ª ed. 2022 — ISBN 978-1098104030</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">La referencia principal para pandas. Cubre DataFrames, tipos de datos, imputación, groupby y todo lo usado en el ETL.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">Exploratory Data Analysis</div>
+      <div class="bc-a">John W. Tukey</div>
+      <div class="bc-y">Addison-Wesley, 1977 — El origen de IQR y boxplot</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">El libro que definió el método IQR para detección de outliers que usa el notebook. El factor 1.5 viene de aquí.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">Statistical Analysis with Missing Data</div>
+      <div class="bc-a">Roderick J.A. Little & Donald B. Rubin</div>
+      <div class="bc-y">Wiley, 3ª ed. 2019 — ISBN 978-0470526798</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">La fuente académica de la clasificación MCAR / MAR / MNAR que usa el notebook para decidir cómo imputar nulos.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">Practical Statistics for Data Scientists</div>
+      <div class="bc-a">Peter Bruce, Andrew Bruce & Peter Gedeck</div>
+      <div class="bc-y">O'Reilly, 2ª ed. 2020 — ISBN 978-1492072942</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">Explica el impacto de outliers en estadísticas descriptivas (media, std, máximo) con ejemplos prácticos.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">The Data Warehouse Toolkit</div>
+      <div class="bc-a">Ralph Kimball & Margy Ross</div>
+      <div class="bc-y">Wiley, 3ª ed. 2013 — ISBN 978-1118530801</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">La biblia del modelo dimensional. Explica el esquema estrella, claves foráneas, integridad referencial y JOINs.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">The Elements of Statistical Learning</div>
+      <div class="bc-a">Hastie, Tibshirani & Friedman</div>
+      <div class="bc-y">Springer, 2ª ed. 2009 — Disponible gratis en line</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">Referencia para la selección de técnica de imputación: por qué la media introduce sesgo en distribuciones asimétricas.</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">Data Quality: The Accuracy Dimension</div>
+      <div class="bc-a">Jack E. Olson</div>
+      <div class="bc-y">Morgan Kaufmann, 2003 — ISBN 978-1558608917</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">Introduce las reglas de negocio como herramienta de validación de rangos (lo que hace auditar_rangos en el notebook).</p>
+    </div>
+    <div class="bib-card">
+      <div class="bc-t">Competing on Analytics</div>
+      <div class="bc-a">Thomas H. Davenport & Jeanne G. Harris</div>
+      <div class="bc-y">Harvard Business Review Press, 2007</div>
+      <p style="font-size:.8rem;margin-top:6px;color:#57534E;">Justificación ejecutiva de por qué la calidad de datos impacta directamente las decisiones de negocio. "Garbage in, garbage out" aplicado al nivel gerencial.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CIERRE FINAL -->
+<div class="cierre">
+  <h2>🎓 ETL completo — de datos crudos a datos listos</h2>
+  <p>Dos sesiones, 9 pasos, 50,500 transacciones transformadas. Este dataset limpio es la base de todo lo que viene en el curso.</p>
+  <div class="flujo-f">
+    <div class="fp2">📥 Extraer</div><div class="fa2">→</div>
+    <div class="fp2">🔍 Auditar</div><div class="fa2">→</div>
+    <div class="fp2">🗂️ Tipos</div><div class="fa2">→</div>
+    <div class="fp2">📅 Fechas</div><div class="fa2">→</div>
+    <div class="fp2">🕳️ Nulos</div><div class="fa2">→</div>
+    <div class="fp2">💾 Checkpoint</div>
+  </div>
+  <div class="flujo-f">
+    <div class="fp2">📈 Outliers</div><div class="fa2">→</div>
+    <div class="fp2">✂️ Winsorizar</div><div class="fa2">→</div>
+    <div class="fp2">🔤 Texto</div><div class="fa2">→</div>
+    <div class="fp2">📋 Duplicados</div><div class="fa2">→</div>
+    <div class="fp2">🚫 Dominio</div><div class="fa2">→</div>
+    <div class="fp2">🔗 Integridad</div><div class="fa2">→</div>
+    <div class="fp2">🔀 JOINs</div><div class="fa2">→</div>
+    <div class="fp2">💾 fv_limpia_final.csv</div>
+  </div>
+  <p style="font-size:.83rem;margin-top:24px;opacity:.7;">Inteligencia de Negocios · ETL Sesiones 2 y 3 · 98 celdas de notebook cubiertas al 100%</p>
+</div>
+
+</div><!-- /wrap -->
+</body>
+</html>
